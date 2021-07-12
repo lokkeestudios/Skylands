@@ -6,6 +6,7 @@ import me.lokkee.skylands.core.utils.ItemSerializer;
 import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -47,10 +48,12 @@ public final class ItemManager {
      */
     public void saveItems() {
         for (final @NonNull Item item : itemRegistry.getItems()) {
-            try (final @NonNull PreparedStatement ps =
-                         databaseManager.getConnection().prepareStatement(
-                                 "UPDATE item_data SET type = ?, rarity = ?, itemstack = ? WHERE id = ?"
-                         )
+            try (
+                    final @NonNull Connection connection = databaseManager.getConnection();
+                    final @NonNull PreparedStatement ps =
+                            connection.prepareStatement(
+                                    "UPDATE item_data SET type = ?, rarity = ?, itemstack = ? WHERE id = ?"
+                            )
             ) {
                 ps.setString(1, item.getType().toString());
                 ps.setString(2, item.getRarity().toString());
@@ -59,16 +62,16 @@ public final class ItemManager {
                 ps.executeUpdate();
 
                 for (final @NonNull ItemStat current : item.getStats()) {
-                    try (final @NonNull PreparedStatement ps2 =
-                                 databaseManager.getConnection().prepareStatement(
-                                         "UPDATE itemstat_data SET value = ? WHERE id = ? AND stat = ?"
-                                 )
+                    try (
+                            final @NonNull Connection connection2 = databaseManager.getConnection();
+                            final @NonNull PreparedStatement ps2 =
+                                    connection2.prepareStatement(
+                                            "UPDATE itemstat_data SET value = ? WHERE id = ? AND stat = ?"
+                                    )
                     ) {
                         ps2.setDouble(1, item.getStat(current));
                         ps2.setString(2, item.getId());
                         ps2.setString(3, current.toString());
-                    } catch (final @NonNull SQLException e) {
-                        throw new RuntimeException(e);
                     }
                 }
             } catch (final @NonNull SQLException e) {
@@ -92,10 +95,12 @@ public final class ItemManager {
             final @NonNull Rarity rarity,
             final @NonNull ItemStack itemStack
     ) {
-        try (final @NonNull PreparedStatement ps =
-                     databaseManager.getConnection().prepareStatement(
-                             "INSERT INTO item_data (id, type, rarity, itemstack) VALUES(?, ?, ?, ?)"
-                     )
+        try (
+                final @NonNull Connection connection = databaseManager.getConnection();
+                final @NonNull PreparedStatement ps =
+                        connection.prepareStatement(
+                                "INSERT INTO item_data (id, type, rarity, itemstack) VALUES(?, ?, ?, ?)"
+                        )
         ) {
             ps.setString(1, id);
             ps.setString(2, type.toString());
@@ -117,10 +122,12 @@ public final class ItemManager {
      * @param id the id of the Item which is to be deleted
      */
     public void deleteItem(final @NonNull String id) {
-        try (final @NonNull PreparedStatement ps =
-                     databaseManager.getConnection().prepareStatement(
-                             "DELETE FROM item_data WHERE id = ?"
-                     )
+        try (
+                final @NonNull Connection connection = databaseManager.getConnection();
+                final @NonNull PreparedStatement ps =
+                        connection.prepareStatement(
+                                "DELETE FROM item_data WHERE id = ?"
+                        )
         ) {
             ps.setString(1, id);
             ps.executeUpdate();
@@ -169,10 +176,12 @@ public final class ItemManager {
                 item.setStat(stat, value);
                 return;
             }
-            try (final @NonNull PreparedStatement ps =
-                         databaseManager.getConnection().prepareStatement(
-                                 "DELETE FROM itemstat_data WHERE id = ? AND stat = ?"
-                         )
+            try (
+                    final @NonNull Connection connection = databaseManager.getConnection();
+                    final @NonNull PreparedStatement ps =
+                            connection.prepareStatement(
+                                    "DELETE FROM itemstat_data WHERE id = ? AND stat = ?"
+                            )
             ) {
                 ps.setString(1, id);
                 ps.setString(2, stat.toString());
@@ -186,10 +195,12 @@ public final class ItemManager {
         if (value == 0) {
             return;
         }
-        try (final @NonNull PreparedStatement ps =
-                     databaseManager.getConnection().prepareStatement(
-                             "INSERT INTO itemstat_data (id, stat, value) VALUES(?, ?, ?)"
-                     )
+        try (
+                final @NonNull Connection connection = databaseManager.getConnection();
+                final @NonNull PreparedStatement ps =
+                        connection.prepareStatement(
+                                "INSERT INTO itemstat_data (id, stat, value) VALUES(?, ?, ?)"
+                        )
         ) {
             ps.setString(1, id);
             ps.setString(2, stat.toString());
@@ -206,46 +217,50 @@ public final class ItemManager {
      * and stores them in the {@link ItemRegistry}.
      */
     public void loadItems() {
-        try (final @NonNull PreparedStatement ps =
-                     databaseManager.getConnection().prepareStatement(
-                             "SELECT * FROM item_data"
-                     )
+        try (
+                final @NonNull Connection connection = databaseManager.getConnection();
+                final @NonNull PreparedStatement ps =
+                        connection.prepareStatement(
+                                "SELECT * FROM item_data"
+                        )
         ) {
             if (!ps.execute()) {
                 return;
             }
-            final @NonNull ResultSet rs = ps.getResultSet();
+            try (final @NonNull ResultSet rs = ps.getResultSet()) {
 
-            while (rs.next()) {
-                final @NonNull String id = rs.getString("id");
-                final @NonNull ItemType type = ItemType.valueOf(rs.getString("type"));
-                final @NonNull Rarity rarity = Rarity.valueOf(rs.getString("rarity"));
-                final @NonNull ItemStack itemStack = ItemSerializer.ItemStackFromBase64(rs.getString("itemstack"));
+                while (rs.next()) {
+                    final @NonNull String id = rs.getString("id");
+                    final @NonNull ItemType type = ItemType.valueOf(rs.getString("type"));
+                    final @NonNull Rarity rarity = Rarity.valueOf(rs.getString("rarity"));
+                    final @NonNull ItemStack itemStack = ItemSerializer.ItemStackFromBase64(rs.getString("itemstack"));
 
-                final @NonNull Item item = new Item(id, type, rarity, itemStack);
+                    final @NonNull Item item = new Item(id, type, rarity, itemStack);
 
-                try (final @NonNull PreparedStatement ps2 =
-                             databaseManager.getConnection().prepareStatement(
-                                     "SELECT * FROM itemstat_data WHERE id = ?"
-                             )
-                ) {
-                    ps2.setString(1, id);
+                    try (
+                            final @NonNull Connection connection2 = databaseManager.getConnection();
+                            final @NonNull PreparedStatement ps2 =
+                                    connection2.prepareStatement(
+                                            "SELECT * FROM itemstat_data WHERE id = ?"
+                                    )
+                    ) {
+                        ps2.setString(1, id);
 
-                    if (!ps2.execute()) {
-                        break;
+                        if (!ps2.execute()) {
+                            break;
+                        }
+                        try (final @NonNull ResultSet rs2 = ps2.getResultSet()) {
+
+                            while (rs2.next()) {
+                                final @NonNull ItemStat stat = ItemStat.valueOf(rs2.getString("stat"));
+                                final double value = rs2.getDouble("value");
+
+                                item.setStat(stat, value);
+                            }
+                        }
                     }
-                    final @NonNull ResultSet rs2 = ps2.getResultSet();
-
-                    while (rs2.next()) {
-                        final @NonNull ItemStat stat = ItemStat.valueOf(rs2.getString("stat"));
-                        final double value = rs2.getDouble("value");
-
-                        item.setStat(stat, value);
-                    }
-                } catch (final @NonNull SQLException e) {
-                    throw new RuntimeException(e);
+                    itemRegistry.registerItem(item);
                 }
-                itemRegistry.registerItem(item);
             }
         } catch (final @NonNull SQLException e) {
             throw new RuntimeException(e);
