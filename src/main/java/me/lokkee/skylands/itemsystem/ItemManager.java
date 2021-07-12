@@ -236,7 +236,7 @@ public final class ItemManager {
                     }
                     final @NonNull ResultSet rs2 = ps2.getResultSet();
 
-                    while (rs.next()) {
+                    while (rs2.next()) {
                         final @NonNull ItemStat stat = ItemStat.valueOf(rs2.getString("stat"));
                         final double value = rs2.getDouble("value");
 
