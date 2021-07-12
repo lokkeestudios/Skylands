@@ -7,6 +7,7 @@ All notable changes to this project will be documented in this file.
 A collection of changes that were not pushed to the `master` branch yet.
 
 ### Added
+- `CHANGELOG` file to document notable changes
 
 ### Changed
 
