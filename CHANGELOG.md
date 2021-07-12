@@ -24,3 +24,6 @@ This is the first version and thus adds all the basic Files.
 ### Added
 - `ItemSystem` Base Structure
 - `Core` System Utils and Functionality
+
+[Unreleased]: https://github.com/lokkeeWasTaken/Skylands/releases/tag/Unreleased
+[0.1.0-SNAPSHOT]: https://github.com/lokkeeWasTaken/Skylands/releases/tag/0.1.0-SNAPSHOT
