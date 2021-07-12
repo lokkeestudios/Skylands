@@ -16,7 +16,7 @@ A collection of changes that were not pushed to the `master` branch yet.
 ### Removed
 
 ### Fixed
-- `loadItems()` in `ItemManager` having causing an empty ResultSet Exception.
+- `loadItems()` in `ItemManager` causing an empty ResultSet Exception.
 - `Database` statement Objects not closing properly
 
 ## [0.1.0-SNAPSHOT]
