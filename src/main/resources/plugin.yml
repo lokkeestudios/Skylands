@@ -1,0 +1,6 @@
+name: Skylands
+version: ${project.version}
+main: me.lokkee.skylands.Skylands
+api-version: 1.17
+author: LOKKEE
+description: ${project.description}
