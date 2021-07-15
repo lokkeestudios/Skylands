@@ -421,7 +421,7 @@ public final class ItemGui {
      * @param <T>          the type of the filter
      * @return the lore for the ItemStack
      */
-    private <T extends ItemFilter> List<Component> getFilterItemLore(
+    private <T extends ItemFilter<?>> List<Component> getFilterItemLore(
             final @Nullable T filter,
             final @NonNull T[] filterValues
     ) {
@@ -455,7 +455,7 @@ public final class ItemGui {
      * @param <T>          the type of the filter
      * @return the new filter
      */
-    private <T extends ItemFilter> T getNewFilter(
+    private <T extends ItemFilter<?>> T getNewFilter(
             final @Nullable T filter,
             final @NonNull T[] filterValues,
             final @NonNull InventoryClickEvent event

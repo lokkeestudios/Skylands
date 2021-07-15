@@ -14,9 +14,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.bukkit.persistence.PersistentDataType;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * Contains all common methods of ItemBuilders
