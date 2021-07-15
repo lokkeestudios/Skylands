@@ -12,10 +12,10 @@ import com.github.stefvanschie.inventoryframework.pane.util.Mask;
 import com.lokkeestudios.skylands.core.Rarity;
 import com.lokkeestudios.skylands.core.utils.Constants;
 import com.lokkeestudios.skylands.core.utils.TextUtil;
+import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
 import com.lokkeestudios.skylands.itemsystem.Item;
 import com.lokkeestudios.skylands.itemsystem.ItemFilter;
 import com.lokkeestudios.skylands.itemsystem.ItemRegistry;
-import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
 import com.lokkeestudios.skylands.itemsystem.ItemType;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang.StringUtils;
@@ -186,54 +186,58 @@ public final class ItemGui {
 
         gui.addPane(closePane);
 
-        final @NonNull StaticPane backPane = new StaticPane(0, 5, 1, 1, Pane.Priority.HIGHEST);
-        final @NonNull StaticPane forwardPane = new StaticPane(8, 5, 1, 1, Pane.Priority.HIGHEST);
+        final @NonNull StaticPane previousPane = new StaticPane(0, 5, 1, 1, Pane.Priority.HIGHEST);
+        final @NonNull StaticPane nextPane = new StaticPane(8, 5, 1, 1, Pane.Priority.HIGHEST);
 
-        final @NonNull ItemStack backItem = ItemBuilder.head()
-                .base64(Constants.Heads.BASE64_BACK_ARROW)
-                .name(Component.text("Go Back", Constants.Text.STYLE_HIGHLIGHTED))
+        final @NonNull ItemStack previousItem = ItemBuilder.head()
+                .base64(Constants.Heads.BASE64_ARROW_LEFT)
+                .name(Component.text(
+                        Constants.Text.SYMBOL_ARROW_LEFT + " Previous Page", Constants.Text.STYLE_HIGHLIGHTED
+                ))
                 .build();
-        updateNavigationDisplay(backItem, 0, itemsPane.getPages());
+        updateNavigationDisplay(previousItem, 0, itemsPane.getPages());
 
-        final @NonNull ItemStack forwardItem = ItemBuilder.head()
-                .base64(Constants.Heads.BASE64_FORWARD_ARROW)
-                .name(Component.text("Go Forward", Constants.Text.STYLE_HIGHLIGHTED))
+        final @NonNull ItemStack nextItem = ItemBuilder.head()
+                .base64(Constants.Heads.BASE64_ARROW_RIGHT)
+                .name(Component.text(
+                        "Next Page " + Constants.Text.SYMBOL_ARROW_RIGHT, Constants.Text.STYLE_HIGHLIGHTED
+                ))
                 .build();
-        updateNavigationDisplay(backItem, 2, itemsPane.getPages());
+        updateNavigationDisplay(nextItem, 2, itemsPane.getPages());
 
-        backPane.addItem(new GuiItem(backItem, event -> {
+        previousPane.addItem(new GuiItem(previousItem, event -> {
             itemsPane.setPage(itemsPane.getPage() - 1);
 
-            updateNavigationDisplay(backItem, itemsPane.getPage(), itemsPane.getPages());
-            updateNavigationDisplay(backItem, (itemsPane.getPage() + 2), itemsPane.getPages());
+            updateNavigationDisplay(previousItem, itemsPane.getPage(), itemsPane.getPages());
+            updateNavigationDisplay(nextItem, (itemsPane.getPage() + 2), itemsPane.getPages());
 
             if (itemsPane.getPage() == 0) {
-                backPane.setVisible(false);
+                previousPane.setVisible(false);
             }
 
-            forwardPane.setVisible(true);
+            nextPane.setVisible(true);
             gui.update();
         }), 0, 0);
 
-        backPane.setVisible(false);
-        if (itemsPane.getPages() <= 1) forwardPane.setVisible(false);
+        previousPane.setVisible(false);
+        if (itemsPane.getPages() <= 1) nextPane.setVisible(false);
 
-        forwardPane.addItem(new GuiItem(forwardItem, event -> {
+        nextPane.addItem(new GuiItem(nextItem, event -> {
             itemsPane.setPage(itemsPane.getPage() + 1);
 
-            updateNavigationDisplay(backItem, itemsPane.getPage(), itemsPane.getPages());
-            updateNavigationDisplay(backItem, (itemsPane.getPage() + 2), itemsPane.getPages());
+            updateNavigationDisplay(previousItem, itemsPane.getPage(), itemsPane.getPages());
+            updateNavigationDisplay(nextItem, (itemsPane.getPage() + 2), itemsPane.getPages());
 
             if (itemsPane.getPage() == itemsPane.getPages() - 1) {
-                forwardPane.setVisible(false);
+                nextPane.setVisible(false);
             }
 
-            backPane.setVisible(true);
+            previousPane.setVisible(true);
             gui.update();
         }), 0, 0);
 
-        gui.addPane(backPane);
-        gui.addPane(forwardPane);
+        gui.addPane(previousPane);
+        gui.addPane(nextPane);
 
         final @NonNull StaticPane toolsPane = new StaticPane(0, 5, 9, 1, Pane.Priority.HIGHEST);
 
@@ -329,7 +333,7 @@ public final class ItemGui {
         searchGui.setOnGlobalClick(event -> event.setCancelled(true));
 
         final @NonNull ItemStack backItem = ItemBuilder.head()
-                .base64(Constants.Heads.BASE64_BACK_ARROW)
+                .base64(Constants.Heads.BASE64_ARROW_LEFT)
                 .name(Component.text("Go Back", Constants.Text.STYLE_ALERT))
                 .build();
 
@@ -460,21 +464,17 @@ public final class ItemGui {
             final @NonNull T[] filterValues,
             final @NonNull InventoryClickEvent event
     ) {
-        final @NonNull List<T> values = Arrays.stream(filterValues).toList();
+        final @NonNull List<T> values = new ArrayList<>();
+        values.add(null);
+        values.addAll(Arrays.asList(filterValues));
 
-        final @Nullable T newFilter;
-
-        if (filter == null) {
-            if (event.isRightClick()) newFilter = values.get(values.size() - 1);
-            else newFilter = values.get(0);
-        } else if (values.indexOf(filter) == 0 && event.isRightClick()) {
-            newFilter = null;
+        if (values.indexOf(filter) == 0 && event.isRightClick()) {
+            return values.get(0);
         } else if (values.indexOf(filter) == (values.size() - 1) && !event.isRightClick()) {
-            newFilter = null;
+            return values.get(values.size() - 1);
         } else {
-            newFilter = values.get(values.indexOf(filter) + (event.isRightClick() ? -1 : 1));
+            return values.get(values.indexOf(filter) + (event.isRightClick() ? -1 : 1));
         }
-        return newFilter;
     }
 
     /**

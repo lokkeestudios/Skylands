@@ -87,6 +87,16 @@ public final class Constants {
          * The prefix {@link Component}.
          */
         public static final @NonNull Component PREFIX = Component.empty().append(TextUtil.toBoldComponentWithSystemGradient("[Skylands] "));
+
+        /**
+         * The UTF symbol for arrow right.
+         */
+        public static final @NonNull String SYMBOL_ARROW_RIGHT = "→";
+
+        /**
+         * The UTF symbol for arrow left.
+         */
+        public static final @NonNull String SYMBOL_ARROW_LEFT = "←";
     }
 
     /**
@@ -122,14 +132,14 @@ public final class Constants {
      */
     public static final class Heads {
         /**
-         * The {@link Base64} String of the forward arrow.
+         * The {@link Base64} String of the arrow right player head.
          */
-        public static final @NonNull String BASE64_FORWARD_ARROW = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTliZjMyOTJlMTI2YTEwNWI1NGViYTcxM2FhMWIxNTJkNTQxYTFkODkzODgyOWM1NjM2NGQxNzhlZDIyYmYifX19";
+        public static final @NonNull String BASE64_ARROW_RIGHT = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTliZjMyOTJlMTI2YTEwNWI1NGViYTcxM2FhMWIxNTJkNTQxYTFkODkzODgyOWM1NjM2NGQxNzhlZDIyYmYifX19";
 
         /**
-         * The {@link Base64} String of the back arrow.
+         * The {@link Base64} String of the arrow left player head.
          */
-        public static final @NonNull String BASE64_BACK_ARROW = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMTA2M2YyNTUzYjJmYTk0NWVlMWQ0ZDcxNTJmZGM1NDI1YmMxMmE5In19fQ==";
+        public static final @NonNull String BASE64_ARROW_LEFT = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMTA2M2YyNTUzYjJmYTk0NWVlMWQ0ZDcxNTJmZGM1NDI1YmMxMmE5In19fQ==";
     }
 
     /**
