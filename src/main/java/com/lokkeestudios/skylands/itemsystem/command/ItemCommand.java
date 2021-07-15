@@ -1,4 +1,4 @@
-package me.lokkee.skylands.itemsystem.command;
+package com.lokkeestudios.skylands.itemsystem.command;
 
 import cloud.commandframework.ArgumentDescription;
 import cloud.commandframework.Command;
@@ -9,11 +9,11 @@ import cloud.commandframework.arguments.standard.IntegerArgument;
 import cloud.commandframework.arguments.standard.StringArgument;
 import cloud.commandframework.bukkit.parsers.PlayerArgument;
 import cloud.commandframework.context.CommandContext;
-import me.lokkee.skylands.core.Rarity;
-import me.lokkee.skylands.core.utils.Constants;
-import me.lokkee.skylands.core.utils.itembuilder.ItemBuilder;
-import me.lokkee.skylands.itemsystem.*;
-import me.lokkee.skylands.itemsystem.gui.ItemGui;
+import com.lokkeestudios.skylands.core.utils.Constants;
+import com.lokkeestudios.skylands.itemsystem.*;
+import com.lokkeestudios.skylands.core.Rarity;
+import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
+import com.lokkeestudios.skylands.itemsystem.gui.ItemGui;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Material;

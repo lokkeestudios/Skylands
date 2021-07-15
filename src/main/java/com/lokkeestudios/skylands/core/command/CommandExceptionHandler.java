@@ -1,11 +1,11 @@
-package me.lokkee.skylands.core.command;
+package com.lokkeestudios.skylands.core.command;
 
 import cloud.commandframework.CommandManager;
 import cloud.commandframework.exceptions.InvalidCommandSenderException;
 import cloud.commandframework.exceptions.InvalidSyntaxException;
 import cloud.commandframework.exceptions.NoPermissionException;
 import cloud.commandframework.minecraft.extras.MinecraftExceptionHandler;
-import me.lokkee.skylands.core.utils.Constants;
+import com.lokkeestudios.skylands.core.utils.Constants;
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.util.ComponentMessageThrowable;

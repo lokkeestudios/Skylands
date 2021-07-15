@@ -1,4 +1,4 @@
-package me.lokkee.skylands.core.utils.itembuilder;
+package com.lokkeestudios.skylands.core.utils.itembuilder;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;

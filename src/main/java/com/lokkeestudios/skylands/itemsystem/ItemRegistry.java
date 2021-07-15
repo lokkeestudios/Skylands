@@ -1,4 +1,4 @@
-package me.lokkee.skylands.itemsystem;
+package com.lokkeestudios.skylands.itemsystem;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 

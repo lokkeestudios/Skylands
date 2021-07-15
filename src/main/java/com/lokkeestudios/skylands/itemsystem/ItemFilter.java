@@ -1,6 +1,6 @@
-package me.lokkee.skylands.itemsystem;
+package com.lokkeestudios.skylands.itemsystem;
 
-import me.lokkee.skylands.core.StringName;
+import com.lokkeestudios.skylands.core.StringName;
 
 /**
  * An Interface, which marks a class as an {@link ItemFilter}.

@@ -1,8 +1,8 @@
-package me.lokkee.skylands.core.database;
+package com.lokkeestudios.skylands.core.database;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import me.lokkee.skylands.Skylands;
+import com.lokkeestudios.skylands.Skylands;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.File;

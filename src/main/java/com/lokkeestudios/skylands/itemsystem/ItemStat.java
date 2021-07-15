@@ -1,7 +1,7 @@
-package me.lokkee.skylands.itemsystem;
+package com.lokkeestudios.skylands.itemsystem;
 
-import me.lokkee.skylands.core.StringName;
-import me.lokkee.skylands.core.utils.Constants;
+import com.lokkeestudios.skylands.core.StringName;
+import com.lokkeestudios.skylands.core.utils.Constants;
 import org.bukkit.NamespacedKey;
 import org.checkerframework.checker.nullness.qual.NonNull;
 

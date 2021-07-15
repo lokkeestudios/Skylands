@@ -1,6 +1,6 @@
 name: Skylands
 version: ${pluginVersion}
-main: me.lokkee.skylands.Skylands
+main: com.lokkeestudios.skylands.Skylands
 api-version: 1.17
 author: LOKKEE
 description: Skylands is an upcoming open-source System, with all sorts of RPG related functionalities.

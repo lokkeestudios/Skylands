@@ -1,8 +1,8 @@
-package me.lokkee.skylands.itemsystem;
+package com.lokkeestudios.skylands.itemsystem;
 
-import me.lokkee.skylands.core.Rarity;
-import me.lokkee.skylands.core.utils.Constants;
-import me.lokkee.skylands.core.utils.itembuilder.ItemBuilder;
+import com.lokkeestudios.skylands.core.utils.Constants;
+import com.lokkeestudios.skylands.core.Rarity;
+import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;

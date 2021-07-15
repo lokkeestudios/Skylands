@@ -1,4 +1,4 @@
-package me.lokkee.skylands.itemsystem.gui;
+package com.lokkeestudios.skylands.itemsystem.gui;
 
 import com.github.stefvanschie.inventoryframework.adventuresupport.ComponentHolder;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
@@ -9,14 +9,14 @@ import com.github.stefvanschie.inventoryframework.pane.PaginatedPane;
 import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
-import me.lokkee.skylands.core.Rarity;
-import me.lokkee.skylands.core.utils.Constants;
-import me.lokkee.skylands.core.utils.TextUtil;
-import me.lokkee.skylands.core.utils.itembuilder.ItemBuilder;
-import me.lokkee.skylands.itemsystem.Item;
-import me.lokkee.skylands.itemsystem.ItemFilter;
-import me.lokkee.skylands.itemsystem.ItemRegistry;
-import me.lokkee.skylands.itemsystem.ItemType;
+import com.lokkeestudios.skylands.core.Rarity;
+import com.lokkeestudios.skylands.core.utils.Constants;
+import com.lokkeestudios.skylands.core.utils.TextUtil;
+import com.lokkeestudios.skylands.itemsystem.Item;
+import com.lokkeestudios.skylands.itemsystem.ItemFilter;
+import com.lokkeestudios.skylands.itemsystem.ItemRegistry;
+import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
+import com.lokkeestudios.skylands.itemsystem.ItemType;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;

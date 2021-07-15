@@ -1,14 +1,14 @@
-package me.lokkee.skylands;
+package com.lokkeestudios.skylands;
 
 import cloud.commandframework.CommandManager;
 import cloud.commandframework.execution.CommandExecutionCoordinator;
 import cloud.commandframework.minecraft.extras.AudienceProvider;
 import cloud.commandframework.paper.PaperCommandManager;
-import me.lokkee.skylands.core.command.CommandExceptionHandler;
-import me.lokkee.skylands.core.database.DatabaseManager;
-import me.lokkee.skylands.itemsystem.ItemManager;
-import me.lokkee.skylands.itemsystem.ItemRegistry;
-import me.lokkee.skylands.itemsystem.command.ItemCommand;
+import com.lokkeestudios.skylands.core.database.DatabaseManager;
+import com.lokkeestudios.skylands.itemsystem.ItemManager;
+import com.lokkeestudios.skylands.itemsystem.ItemRegistry;
+import com.lokkeestudios.skylands.itemsystem.command.ItemCommand;
+import com.lokkeestudios.skylands.core.command.CommandExceptionHandler;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;

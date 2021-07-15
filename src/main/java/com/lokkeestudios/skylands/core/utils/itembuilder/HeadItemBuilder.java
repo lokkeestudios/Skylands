@@ -1,4 +1,4 @@
-package me.lokkee.skylands.core.utils.itembuilder;
+package com.lokkeestudios.skylands.core.utils.itembuilder;
 
 import com.destroystokyo.paper.profile.PlayerProfile;
 import com.destroystokyo.paper.profile.ProfileProperty;

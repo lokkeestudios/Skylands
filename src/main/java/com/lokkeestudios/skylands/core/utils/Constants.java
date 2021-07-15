@@ -1,7 +1,7 @@
-package me.lokkee.skylands.core.utils;
+package com.lokkeestudios.skylands.core.utils;
 
-import me.lokkee.skylands.Skylands;
-import me.lokkee.skylands.core.utils.itembuilder.ItemBuilder;
+import com.lokkeestudios.skylands.Skylands;
+import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;

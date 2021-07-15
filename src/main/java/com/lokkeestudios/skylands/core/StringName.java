@@ -1,4 +1,4 @@
-package me.lokkee.skylands.core;
+package com.lokkeestudios.skylands.core;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 

@@ -1,8 +1,8 @@
-package me.lokkee.skylands.itemsystem;
+package com.lokkeestudios.skylands.itemsystem;
 
-import me.lokkee.skylands.core.Rarity;
-import me.lokkee.skylands.core.database.DatabaseManager;
-import me.lokkee.skylands.core.utils.ItemSerializer;
+import com.lokkeestudios.skylands.core.Rarity;
+import com.lokkeestudios.skylands.core.database.DatabaseManager;
+import com.lokkeestudios.skylands.core.utils.ItemSerializer;
 import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.NonNull;
 

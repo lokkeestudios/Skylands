@@ -24,7 +24,7 @@ dependencies {
     compileOnly("io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT")
 }
 
-group = "me.lokkee"
+group = "com.lokkeestudios"
 version = "0.1.0-SNAPSHOT"
 description = "Skylands is an upcoming open-source System, with all sorts of RPG related functionalities."
 java.sourceCompatibility = JavaVersion.VERSION_16

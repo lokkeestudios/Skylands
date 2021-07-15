@@ -1,4 +1,4 @@
-package me.lokkee.skylands.core.utils;
+package com.lokkeestudios.skylands.core.utils;
 
 import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.NonNull;

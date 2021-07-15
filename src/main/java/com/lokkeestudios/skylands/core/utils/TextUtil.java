@@ -1,4 +1,4 @@
-package me.lokkee.skylands.core.utils;
+package com.lokkeestudios.skylands.core.utils;
 
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.TextComponent;
