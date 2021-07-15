@@ -10,6 +10,7 @@ A collection of changes that were not pushed to the `master` branch yet.
 - `CHANGELOG` file to document notable changes
 
 ### Changed
+- Some `Database` variable names of the `ItemManager`, to be more self-explanatory
 
 ### Deprecated
 
