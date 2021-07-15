@@ -1,5 +1,6 @@
 package me.lokkee.skylands.itemsystem;
 
+import me.lokkee.skylands.core.StringName;
 import me.lokkee.skylands.core.utils.Constants;
 import org.bukkit.NamespacedKey;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -7,7 +8,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 /**
  * Holds all the item stats.
  */
-public enum ItemStat {
+public enum ItemStat implements StringName {
 
     /**
      * The attack damage item stat.

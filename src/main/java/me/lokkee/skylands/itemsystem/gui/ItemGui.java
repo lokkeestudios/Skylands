@@ -14,13 +14,16 @@ import me.lokkee.skylands.core.utils.Constants;
 import me.lokkee.skylands.core.utils.TextUtil;
 import me.lokkee.skylands.core.utils.itembuilder.ItemBuilder;
 import me.lokkee.skylands.itemsystem.Item;
+import me.lokkee.skylands.itemsystem.ItemFilter;
 import me.lokkee.skylands.itemsystem.ItemRegistry;
 import me.lokkee.skylands.itemsystem.ItemType;
 import net.kyori.adventure.text.Component;
 import org.apache.commons.lang.StringUtils;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -66,6 +69,11 @@ public final class ItemGui {
      * the filter are being removed.
      */
     private final @Nullable String searchFilter;
+
+    /**
+     * The title of the item gui.
+     */
+    private final @NonNull ComponentHolder title = ComponentHolder.of(TextUtil.toBoldComponentWithSystemGradient("Items Menu"));
 
     /**
      * The main gui object.
@@ -122,7 +130,7 @@ public final class ItemGui {
      * Constructs the gui and all its buttons and functionality.
      */
     private void constructGui() {
-        gui = new ChestGui(6, ComponentHolder.of(TextUtil.toBoldComponentWithSystemGradient("Items Menu")));
+        gui = new ChestGui(6, title);
 
         gui.setOnGlobalClick(event -> event.setCancelled(true));
 
@@ -184,32 +192,20 @@ public final class ItemGui {
         final @NonNull ItemStack backItem = ItemBuilder.head()
                 .base64(Constants.Heads.BASE64_BACK_ARROW)
                 .name(Component.text("Go Back", Constants.Text.STYLE_HIGHLIGHTED))
-                .lore(Component
-                        .text("Page: ", Constants.Text.STYLE_DEFAULT)
-                        .append(Component.text(0 + "/" + itemsPane.getPages(),
-                                Constants.Text.STYLE_HIGHLIGHTED
-                        ))
-                ).build();
+                .build();
+        updateNavigationDisplay(backItem, 0, itemsPane.getPages());
 
         final @NonNull ItemStack forwardItem = ItemBuilder.head()
                 .base64(Constants.Heads.BASE64_FORWARD_ARROW)
                 .name(Component.text("Go Forward", Constants.Text.STYLE_HIGHLIGHTED))
-                .lore(Component
-                        .text("Page: ", Constants.Text.STYLE_DEFAULT)
-                        .append(Component.text(2 + "/" + itemsPane.getPages(),
-                                Constants.Text.STYLE_HIGHLIGHTED
-                        ))
-                ).build();
+                .build();
+        updateNavigationDisplay(backItem, 2, itemsPane.getPages());
 
         backPane.addItem(new GuiItem(backItem, event -> {
             itemsPane.setPage(itemsPane.getPage() - 1);
 
-            Objects.requireNonNull(backItem.lore()).set(0, Component
-                    .text("Page: ", Constants.Text.STYLE_DEFAULT)
-                    .append(Component.text(itemsPane.getPage() + "/" + itemsPane.getPages(),
-                            Constants.Text.STYLE_HIGHLIGHTED
-                    ))
-            );
+            updateNavigationDisplay(backItem, itemsPane.getPage(), itemsPane.getPages());
+            updateNavigationDisplay(backItem, (itemsPane.getPage() + 2), itemsPane.getPages());
 
             if (itemsPane.getPage() == 0) {
                 backPane.setVisible(false);
@@ -225,12 +221,8 @@ public final class ItemGui {
         forwardPane.addItem(new GuiItem(forwardItem, event -> {
             itemsPane.setPage(itemsPane.getPage() + 1);
 
-            Objects.requireNonNull(backItem.lore()).set(0, Component
-                    .text("Page: ", Constants.Text.STYLE_DEFAULT)
-                    .append(Component.text((itemsPane.getPage() + 2) + "/" + itemsPane.getPages(),
-                            Constants.Text.STYLE_HIGHLIGHTED
-                    ))
-            );
+            updateNavigationDisplay(backItem, itemsPane.getPage(), itemsPane.getPages());
+            updateNavigationDisplay(backItem, (itemsPane.getPage() + 2), itemsPane.getPages());
 
             if (itemsPane.getPage() == itemsPane.getPages() - 1) {
                 forwardPane.setVisible(false);
@@ -273,29 +265,14 @@ public final class ItemGui {
         toolsPane.addItem(new GuiItem(searchFilterItem, event -> {
             final @NonNull Player player = (Player) event.getWhoClicked();
 
-            if (event.isRightClick()) {
+            if (event.isRightClick() && searchFilter != null) {
                 new ItemGui(null, sortFilter, typeFilter, rarityFilter, itemRegistry).open(player);
                 return;
             }
             openSearchGui(player);
         }), 2, 0);
 
-        final List<Component> sortFilterLore = new ArrayList<>();
-        sortFilterLore.add(Component.empty());
-        sortFilterLore.add(Component.text(
-                sortFilter == null ? "◆ None" : "◇ None",
-                sortFilter == null ? Constants.Text.STYLE_DOWNLIGHTED : Constants.Text.STYLE_DEFAULT
-        ));
-        for (final @NonNull SortFilter current : SortFilter.values()) {
-            sortFilterLore.add(Component.text(
-                    current == sortFilter ? "◆ " + current.getName() : "◇ " + current.getName(),
-                    current == sortFilter ? Constants.Text.STYLE_HIGHLIGHTED : Constants.Text.STYLE_DEFAULT
-            ));
-
-        }
-        sortFilterLore.add(Component.empty());
-        sortFilterLore.add(Component.text("Right-Click to go backwards!", Constants.Text.STYLE_INFO));
-        sortFilterLore.add(Component.text("Click to switch sort!", Constants.Text.STYLE_INFO));
+        final @NonNull List<Component> sortFilterLore = getFilterItemLore(sortFilter, SortFilter.values());
 
         final @NonNull ItemStack sortFilterItem = ItemBuilder
                 .from(Material.HOPPER)
@@ -304,36 +281,12 @@ public final class ItemGui {
                 .build();
 
         toolsPane.addItem(new GuiItem(sortFilterItem, event -> {
-            final @NonNull List<SortFilter> values = Arrays.stream(SortFilter.values()).toList();
-
-            final int index = sortFilter == null
-                    ? 0
-                    : values.indexOf(sortFilter) + (event.isRightClick() ? -1 : 1);
-
-            final @Nullable SortFilter newSortFilter;
-
-            if (index == values.size()) newSortFilter = values.get(0);
-            else if (index == -1) newSortFilter = values.get(values.size() - 1);
-            else newSortFilter = values.get(index);
+            final @Nullable SortFilter newSortFilter = getNewFilter(sortFilter, SortFilter.values(), event);
 
             new ItemGui(searchFilter, newSortFilter, typeFilter, rarityFilter, itemRegistry).open((Player) event.getWhoClicked());
         }), 3, 0);
 
-        final @NonNull List<Component> typeFilterLore = new ArrayList<>();
-        typeFilterLore.add(Component.empty());
-        typeFilterLore.add(Component.text(
-                typeFilter == null ? "◆ None" : "◇ None",
-                typeFilter == null ? Constants.Text.STYLE_DOWNLIGHTED : Constants.Text.STYLE_DEFAULT
-        ));
-        for (final @NonNull ItemType current : ItemType.values()) {
-            typeFilterLore.add(Component.text(
-                    current == typeFilter ? "◆ " + current.getName() : "◇ " + current.getName(),
-                    current == typeFilter ? Constants.Text.STYLE_HIGHLIGHTED : Constants.Text.STYLE_DEFAULT
-            ));
-        }
-        typeFilterLore.add(Component.empty());
-        typeFilterLore.add(Component.text("Right-Click to go backwards!", Constants.Text.STYLE_INFO));
-        typeFilterLore.add(Component.text("Click to switch type!", Constants.Text.STYLE_INFO));
+        final @NonNull List<Component> typeFilterLore = getFilterItemLore(typeFilter, ItemType.values());
 
         final @NonNull ItemStack typeFilterItem = ItemBuilder
                 .from(Material.ARMOR_STAND)
@@ -342,37 +295,12 @@ public final class ItemGui {
                 .build();
 
         toolsPane.addItem(new GuiItem(typeFilterItem, event -> {
-            final @NonNull List<ItemType> values = Arrays.stream(ItemType.values()).toList();
-
-            final int index = typeFilter == null
-                    ? 0
-                    : values.indexOf(typeFilter) + (event.isRightClick() ? -1 : 1);
-
-            final @Nullable ItemType newTypeFilter;
-
-            if (index == values.size()) newTypeFilter = values.get(0);
-            else if (index == -1) newTypeFilter = values.get(values.size() - 1);
-            else newTypeFilter = values.get(index);
+            final @Nullable ItemType newTypeFilter = getNewFilter(typeFilter, ItemType.values(), event);
 
             new ItemGui(searchFilter, sortFilter, newTypeFilter, rarityFilter, itemRegistry).open((Player) event.getWhoClicked());
         }), 5, 0);
 
-        final @NonNull List<Component> rarityFilterLore = new ArrayList<>();
-        rarityFilterLore.add(Component.empty());
-        rarityFilterLore.add(Component.text(
-                rarityFilter == null ? "◆ None" : "◇ None",
-                rarityFilter == null ? Constants.Text.STYLE_DOWNLIGHTED : Constants.Text.STYLE_DEFAULT
-        ));
-        for (final @NonNull Rarity current : Rarity.values()) {
-            final @NonNull Component line = Component.text(
-                    current == rarityFilter ? "◆ " + current.getName() : "◇ " + current.getName(),
-                    Constants.Text.STYLE_DEFAULT
-            );
-            rarityFilterLore.add(current == rarityFilter ? current.applyColor(line) : line);
-        }
-        rarityFilterLore.add(Component.empty());
-        rarityFilterLore.add(Component.text("Right-Click to go backwards!", Constants.Text.STYLE_INFO));
-        rarityFilterLore.add(Component.text("Click to switch rarity!", Constants.Text.STYLE_INFO));
+        final @NonNull List<Component> rarityFilterLore = getFilterItemLore(rarityFilter, Rarity.values());
 
         final @NonNull ItemStack rarityFilterItem = ItemBuilder
                 .from(Material.ENDER_EYE)
@@ -381,17 +309,7 @@ public final class ItemGui {
                 .build();
 
         toolsPane.addItem(new GuiItem(rarityFilterItem, event -> {
-            final @NonNull List<Rarity> values = Arrays.stream(Rarity.values()).toList();
-
-            final int index = rarityFilter == null
-                    ? 0
-                    : values.indexOf(rarityFilter) + (event.isRightClick() ? -1 : 1);
-
-            final @Nullable Rarity newRarityFilter;
-
-            if (index == values.size()) newRarityFilter = null;
-            else if (index == -1) newRarityFilter = values.get(values.size() - 1);
-            else newRarityFilter = values.get(index);
+            final @Nullable Rarity newRarityFilter = getNewFilter(rarityFilter, Rarity.values(), event);
 
             new ItemGui(searchFilter, sortFilter, typeFilter, newRarityFilter, itemRegistry).open((Player) event.getWhoClicked());
         }), 6, 0);
@@ -407,9 +325,7 @@ public final class ItemGui {
      * @param player the player for which the gui should be opened.
      */
     private void openSearchGui(final @NonNull Player player) {
-        final @NonNull AnvilGui searchGui = new AnvilGui(
-                ComponentHolder.of(((ComponentHolder) gui.getTitleHolder()).getComponent())
-        );
+        final @NonNull AnvilGui searchGui = new AnvilGui(title);
         searchGui.setOnGlobalClick(event -> event.setCancelled(true));
 
         final @NonNull ItemStack backItem = ItemBuilder.head()
@@ -475,6 +391,93 @@ public final class ItemGui {
     }
 
     /**
+     * Updates the display of a navigation arrow {@link ItemStack}.
+     * <p>
+     * This is done by updating the lore, which says what page it navigates to.
+     *
+     * @param navigationItem the navigation arrow which is to be updated
+     * @param navigationPage the updated page the navigation arrow navigates to
+     * @param pagesSize      the size of existing pages
+     */
+    private void updateNavigationDisplay(
+            final @NonNull ItemStack navigationItem,
+            final int navigationPage,
+            final int pagesSize
+    ) {
+        final @NonNull ItemMeta navigationItemMeta = navigationItem.getItemMeta();
+        navigationItemMeta.lore(Collections.singletonList(Component
+                .text("Page: ", Constants.Text.STYLE_DEFAULT)
+                .append(Component.text(navigationPage + "/" + pagesSize,
+                        Constants.Text.STYLE_HIGHLIGHTED
+                ))));
+        navigationItem.setItemMeta(navigationItemMeta);
+    }
+
+    /**
+     * Gets the lore for an {@link ItemFilter} {@link ItemStack}.
+     *
+     * @param filter       the filter variable, which has the current filter assigned
+     * @param filterValues the array of all values of the filter
+     * @param <T>          the type of the filter
+     * @return the lore for the ItemStack
+     */
+    private <T extends ItemFilter> List<Component> getFilterItemLore(
+            final @Nullable T filter,
+            final @NonNull T[] filterValues
+    ) {
+        final List<Component> lore = new ArrayList<>();
+        lore.add(Component.empty());
+
+        lore.add(Component.text(
+                filter == null ? "◆ None" : "◇ None",
+                filter == null ? Constants.Text.STYLE_DOWNLIGHTED : Constants.Text.STYLE_DEFAULT
+        ));
+        for (final @NonNull T current : filterValues) {
+            lore.add(Component.text(
+                    current == filter ? "◆ " + current.getName() : "◇ " + current.getName(),
+                    current == filter ? Constants.Text.STYLE_HIGHLIGHTED : Constants.Text.STYLE_DEFAULT
+            ));
+        }
+        lore.add(Component.empty());
+        lore.add(Component.text("Right-Click to go backwards!", Constants.Text.STYLE_INFO));
+        lore.add(Component.text("Click to switch sort!", Constants.Text.STYLE_INFO));
+
+        return lore;
+    }
+
+    /**
+     * Gets the new {@link ItemFilter} based on what happens in the
+     * {@link InventoryClickEvent} when the filter {@link ItemStack} is clicked.
+     *
+     * @param filter       the filter variable, which has the current filter assigned
+     * @param filterValues the array of all values of the filter
+     * @param event        the InventoryClickEvent, invoked from clicking the filter ItemStack
+     * @param <T>          the type of the filter
+     * @return the new filter
+     */
+    private <T extends ItemFilter> T getNewFilter(
+            final @Nullable T filter,
+            final @NonNull T[] filterValues,
+            final @NonNull InventoryClickEvent event
+    ) {
+        final @NonNull List<T> values = Arrays.stream(filterValues).toList();
+
+        final @Nullable T newFilter;
+
+        if (filter == null) {
+            if (event.isRightClick()) newFilter = values.get(values.size() - 1);
+            else newFilter = values.get(0);
+        } else if (values.indexOf(filter) == 0 && event.isRightClick()) {
+            newFilter = null;
+        } else if (values.indexOf(filter) == (values.size() - 1) && !event.isRightClick()) {
+            newFilter = null;
+        } else {
+            newFilter = values.get(values.indexOf(filter) + (event.isRightClick() ? -1 : 1));
+        }
+        return newFilter;
+    }
+
+    /**
      * Opens and renders the {@link ItemGui} for a {@link Player}.
      *
      * @param player the player for which the gui should be shown
@@ -486,7 +489,7 @@ public final class ItemGui {
     /**
      * Holds all the sort filters.
      */
-    private enum SortFilter {
+    private enum SortFilter implements ItemFilter<SortFilter> {
 
         /**
          * The name sort filter.

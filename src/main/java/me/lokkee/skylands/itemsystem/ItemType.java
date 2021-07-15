@@ -2,11 +2,10 @@ package me.lokkee.skylands.itemsystem;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-
 /**
  * Holds all the item types.
  */
-public enum ItemType {
+public enum ItemType implements ItemFilter<ItemType> {
 
     /**
      * The melee weapon item type.

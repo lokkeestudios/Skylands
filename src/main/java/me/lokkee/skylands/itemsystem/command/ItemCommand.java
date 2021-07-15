@@ -296,7 +296,7 @@ public final class ItemCommand {
 
         player.sendMessage(Constants.Text.PREFIX.append(Component
                 .text("Successfully created the item ", Constants.Text.STYLE_DEFAULT)
-                .append(rarity.applyColor(Component.text(id)))
+                .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
         ));
     }
 
@@ -488,7 +488,7 @@ public final class ItemCommand {
                 .text("Set the rarity of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
                 .append(Component.text(" to ", Constants.Text.STYLE_DEFAULT))
-                .append(rarity.applyColor(Component.text(rarity.getName())))
+                .append(Component.text(rarity.getName(), Constants.Text.STYLE_HIGHLIGHTED))
         ));
     }
 

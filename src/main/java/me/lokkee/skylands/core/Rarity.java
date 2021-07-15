@@ -1,17 +1,17 @@
 package me.lokkee.skylands.core;
 
 import me.lokkee.skylands.core.utils.TextUtil;
+import me.lokkee.skylands.itemsystem.ItemFilter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 
-
 /**
  * Holds all the rarities.
  */
-public enum Rarity {
+public enum Rarity implements ItemFilter<Rarity> {
 
     /**
      * The common rarity.
@@ -118,6 +118,7 @@ public enum Rarity {
      *
      * @return the name of the rarity
      */
+    @Override
     public @NonNull String getName() {
         return name;
     }
