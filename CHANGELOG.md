@@ -15,10 +15,13 @@ A collection of changes that were not pushed to the `master` branch yet.
 ### Deprecated
 
 ### Removed
+- A bunch of redundant code inside `ItemGui`
 
 ### Fixed
 - `loadItems()` in `ItemManager` causing an empty ResultSet Exception.
 - `Database` statement Objects not closing properly
+- Navigation arrows of `ItemGui` not displaying the right page
+- Filter buttons of `ItemGui` not cycling correctly in both directions
 
 ## [0.1.0-SNAPSHOT]
 
