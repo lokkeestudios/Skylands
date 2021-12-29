@@ -13,6 +13,8 @@ A collection of changes that were not pushed to the `master` branch yet.
 - `groupId` name to `com.lokkeestudios`
 - Moved from Maven to Gradle
 - Some `Database` variable names of the `ItemManager`, to be more self-explanatory
+- Moved to Paper 1.18
+- Moved to Java 17
 
 ### Deprecated
 
