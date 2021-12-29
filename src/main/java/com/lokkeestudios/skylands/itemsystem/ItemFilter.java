@@ -10,5 +10,4 @@ import com.lokkeestudios.skylands.core.StringName;
  * Thus they either have to be a field on the Item class,
  * or contain Item field types as records, acting as a way to sort Items.
  */
-public interface ItemFilter<T extends Enum<T>> extends StringName {
-}
+public interface ItemFilter<T extends Enum<T>> extends StringName {}

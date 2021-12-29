@@ -9,6 +9,8 @@ import com.lokkeestudios.skylands.itemsystem.ItemManager;
 import com.lokkeestudios.skylands.itemsystem.ItemRegistry;
 import com.lokkeestudios.skylands.itemsystem.command.ItemCommand;
 import com.lokkeestudios.skylands.core.command.CommandExceptionHandler;
+import com.lokkeestudios.skylands.npcsystem.npc.NpcManager;
+import com.lokkeestudios.skylands.npcsystem.npc.NpcRegistry;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -32,6 +34,16 @@ public final class Skylands extends JavaPlugin {
      * The main {@link ItemManager}.
      */
     private ItemManager itemManager;
+
+    /**
+     * The main {@link NpcRegistry}.
+     */
+    private NpcRegistry npcRegistry;
+
+    /**
+     * The main {@link NpcManager}.
+     */
+    private NpcManager npcManager;
 
     /**
      * Handles everything which needs to be done,
@@ -67,6 +79,9 @@ public final class Skylands extends JavaPlugin {
 
         itemRegistry = new ItemRegistry();
         itemManager = new ItemManager(itemRegistry, databaseManager);
+
+        npcRegistry = new NpcRegistry();
+        npcManager = new NpcManager(npcRegistry, databaseManager);
 
         registerCommands();
     }

@@ -1,7 +1,7 @@
 package com.lokkeestudios.skylands.itemsystem;
 
-import com.lokkeestudios.skylands.core.utils.Constants;
 import com.lokkeestudios.skylands.core.Rarity;
+import com.lokkeestudios.skylands.core.utils.Constants;
 import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -19,7 +19,7 @@ import java.util.*;
  * <p>
  * The heart and the core of the entire ItemSystem
  */
-public final class Item {
+public class Item {
 
     /**
      * The unique String id of the Item.
@@ -63,7 +63,12 @@ public final class Item {
      * @param rarity    the {@link Rarity} of the Item
      * @param itemStack the {@link ItemStack} of the Item
      */
-    public Item(final @NonNull String id, final @NonNull ItemType type, final @NonNull Rarity rarity, final @NonNull ItemStack itemStack) {
+    public Item(
+            final @NonNull String id,
+            final @NonNull ItemType type,
+            final @NonNull Rarity rarity,
+            final @NonNull ItemStack itemStack
+    ) {
         this.id = id;
         this.type = type;
         this.rarity = rarity;
