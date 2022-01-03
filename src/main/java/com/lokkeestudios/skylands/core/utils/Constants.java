@@ -13,6 +13,7 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Base64;
+import java.util.UUID;
 
 /**
  * Stores all sorts of constant values.
@@ -97,6 +98,16 @@ public final class Constants {
          * The UTF symbol for arrow left.
          */
         public static final @NonNull String SYMBOL_ARROW_LEFT = "←";
+
+        /**
+         * The default npc title.
+         */
+        public static final @NonNull String NPC_TITLE_DEFAULT = " ";
+
+        /**
+         * The reset {@link Component}.
+         */
+        public static final @NonNull Component RESET_DEFAULTS = Component.text().color(TextColor.color(255, 255, 255)).decoration(TextDecoration.ITALIC, false).build();
     }
 
     /**
@@ -112,6 +123,11 @@ public final class Constants {
          * The ItemSystem permission root.
          */
         public static final @NonNull String ROOT_ITEMSYSTEM = ROOT_PLUGIN + ".itemsystem";
+
+        /**
+         * The NpcSystem permission root.
+         */
+        public static final @NonNull String ROOT_NPCSYSTEM = ROOT_PLUGIN + ".npcsystem";
     }
 
     /**
@@ -140,6 +156,16 @@ public final class Constants {
          * The {@link Base64} String of the arrow left player head.
          */
         public static final @NonNull String BASE64_ARROW_LEFT = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMTA2M2YyNTUzYjJmYTk0NWVlMWQ0ZDcxNTJmZGM1NDI1YmMxMmE5In19fQ==";
+    }
+
+    /**
+     * Stores constant player skins in form of their {@link UUID}s.
+     */
+    public static final class Skins {
+        /**
+         * The {@link UUID} String of the default npc player skin.
+         */
+        public static final @NonNull String SKIN_NPC_DEFAULT = "b3fa515d-7c55-4a66-8ad9-198e41b513f3";
     }
 
     /**

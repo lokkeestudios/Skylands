@@ -4,15 +4,25 @@ import cloud.commandframework.CommandManager;
 import cloud.commandframework.execution.CommandExecutionCoordinator;
 import cloud.commandframework.minecraft.extras.AudienceProvider;
 import cloud.commandframework.paper.PaperCommandManager;
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.event.EventManager;
+import com.github.retrooper.packetevents.event.PacketListener;
+import com.github.retrooper.packetevents.event.PacketListenerPriority;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerChatMessage;
+import com.lokkeestudios.skylands.core.command.CommandExceptionHandler;
 import com.lokkeestudios.skylands.core.database.DatabaseManager;
+import com.lokkeestudios.skylands.core.event.ServerLoadListener;
 import com.lokkeestudios.skylands.itemsystem.ItemManager;
 import com.lokkeestudios.skylands.itemsystem.ItemRegistry;
 import com.lokkeestudios.skylands.itemsystem.command.ItemCommand;
-import com.lokkeestudios.skylands.core.command.CommandExceptionHandler;
 import com.lokkeestudios.skylands.npcsystem.npc.NpcManager;
 import com.lokkeestudios.skylands.npcsystem.npc.NpcRegistry;
+import com.lokkeestudios.skylands.npcsystem.npc.command.NpcCommand;
+import com.lokkeestudios.skylands.npcsystem.npc.event.NpcSpawnPacketListener;
+import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
+import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -44,6 +54,18 @@ public final class Skylands extends JavaPlugin {
      * The main {@link NpcManager}.
      */
     private NpcManager npcManager;
+
+    /**
+     * Handles everything which needs to be done,
+     * when the {@link Skylands} plugin is being loaded.
+     */
+    @Override
+    public void onLoad() {
+        PacketEvents.setAPI(SpigotPacketEventsBuilder.build(this));
+        PacketEvents.getAPI().load();
+        WrapperPlayServerChatMessage.HANDLE_JSON = false;
+    }
+
 
     /**
      * Handles everything which needs to be done,
@@ -83,7 +105,11 @@ public final class Skylands extends JavaPlugin {
         npcRegistry = new NpcRegistry();
         npcManager = new NpcManager(npcRegistry, databaseManager);
 
+        registerEvents();
         registerCommands();
+
+        registerPacketEvents();
+        PacketEvents.getAPI().init();
     }
 
     /**
@@ -93,6 +119,25 @@ public final class Skylands extends JavaPlugin {
     @Override
     public void onDisable() {
         saveData();
+        PacketEvents.getAPI().terminate();
+    }
+
+    /**
+     * Registers and sets up all events.
+     */
+    private void registerEvents() {
+        final @NonNull PluginManager pluginManager = Bukkit.getServer().getPluginManager();
+
+        pluginManager.registerEvents(new ServerLoadListener(npcManager), this);
+    }
+
+    /**
+     * Registers and sets up all {@link PacketListener}s.
+     */
+    private void registerPacketEvents() {
+        final @NonNull EventManager eventManager = PacketEvents.getAPI().getEventManager();
+
+        eventManager.registerListener(new NpcSpawnPacketListener(npcRegistry), PacketListenerPriority.LOW, true);
     }
 
     /**
@@ -102,6 +147,9 @@ public final class Skylands extends JavaPlugin {
         final @NonNull ItemCommand itemCommand = new ItemCommand(itemRegistry, itemManager);
         itemCommand.register(commandManager);
 
+        final @NonNull NpcCommand npcCommand = new NpcCommand(npcRegistry, npcManager);
+        npcCommand.register(commandManager);
+
         new CommandExceptionHandler<CommandSender>().apply(commandManager, AudienceProvider.nativeAudience());
     }
 
@@ -109,6 +157,7 @@ public final class Skylands extends JavaPlugin {
      * Saves the data of all systems.
      */
     private void saveData() {
+        npcManager.saveNpcs();
         itemManager.saveItems();
     }
 }

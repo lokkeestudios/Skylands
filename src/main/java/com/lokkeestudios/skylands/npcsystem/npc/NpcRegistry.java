@@ -1,6 +1,5 @@
 package com.lokkeestudios.skylands.npcsystem.npc;
 
-import com.lokkeestudios.skylands.itemsystem.Item;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.ArrayList;

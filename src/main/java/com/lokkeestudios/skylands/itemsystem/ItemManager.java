@@ -39,7 +39,43 @@ public final class ItemManager {
         this.itemRegistry = itemRegistry;
         this.databaseManager = databaseManager;
 
+        setupDataTables();
         loadItems();
+    }
+
+    /**
+     * Sets up the required tables for the {@link ItemRegistry} data, if needed.
+     */
+    public void setupDataTables() {
+        try (
+                final @NonNull Connection connection = databaseManager.getConnection();
+                final @NonNull PreparedStatement createItemDataStatement =
+                        connection.prepareStatement(
+                                " CREATE TABLE IF NOT EXISTS item " +
+                                        "(id VARCHAR(30) not NULL, " +
+                                        " item_type VARCHAR(30) not NULL, " +
+                                        " item_rarity VARCHAR(30) not NULL, " +
+                                        " item_item_stack VARCHAR(1000) not NULL, " +
+                                        " PRIMARY KEY ( id ))"
+                        )
+        ) {
+            createItemDataStatement.execute();
+            try (
+                    final @NonNull Connection connection2 = databaseManager.getConnection();
+                    final @NonNull PreparedStatement createItemStatDataStatement =
+                            connection2.prepareStatement(
+                                    " CREATE TABLE IF NOT EXISTS item_stat " +
+                                            "(item_id VARCHAR(30) not NULL, " +
+                                            " item_stat_type VARCHAR(30) not NULL, " +
+                                            " item_stat_value DOUBLE not NULL, " +
+                                            " FOREIGN KEY( item_id ) REFERENCES item ( id ))"
+                            )
+            ) {
+                createItemStatDataStatement.execute();
+            }
+        } catch (final @NonNull SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -52,7 +88,7 @@ public final class ItemManager {
                     final @NonNull Connection connection = databaseManager.getConnection();
                     final @NonNull PreparedStatement saveItemStatement =
                             connection.prepareStatement(
-                                    "UPDATE item_data SET type = ?, rarity = ?, itemstack = ? WHERE id = ?"
+                                    "UPDATE item SET item_type = ?, item_rarity = ?, item_item_stack = ? WHERE id = ?"
                             )
             ) {
                 saveItemStatement.setString(1, item.getType().toString());
@@ -66,7 +102,7 @@ public final class ItemManager {
                             final @NonNull Connection connection2 = databaseManager.getConnection();
                             final @NonNull PreparedStatement saveItemStatStatement =
                                     connection2.prepareStatement(
-                                            "UPDATE itemstat_data SET value = ? WHERE id = ? AND stat = ?"
+                                            "UPDATE item_stat SET item_stat_value = ? WHERE item_id = ? AND item_stat_type = ?"
                                     )
                     ) {
                         saveItemStatStatement.setDouble(1, item.getStat(current));
@@ -99,7 +135,7 @@ public final class ItemManager {
                 final @NonNull Connection connection = databaseManager.getConnection();
                 final @NonNull PreparedStatement insertItemStatement =
                         connection.prepareStatement(
-                                "INSERT INTO item_data (id, type, rarity, itemstack) VALUES(?, ?, ?, ?)"
+                                "INSERT INTO item (id, item_type, item_rarity, item_item_stack) VALUES(?, ?, ?, ?)"
                         )
         ) {
             insertItemStatement.setString(1, id);
@@ -126,7 +162,7 @@ public final class ItemManager {
                 final @NonNull Connection connection = databaseManager.getConnection();
                 final @NonNull PreparedStatement deleteItemStatement =
                         connection.prepareStatement(
-                                "DELETE FROM item_data WHERE id = ?"
+                                "DELETE FROM item WHERE id = ?"
                         )
         ) {
             deleteItemStatement.setString(1, id);
@@ -180,7 +216,7 @@ public final class ItemManager {
                     final @NonNull Connection connection = databaseManager.getConnection();
                     final @NonNull PreparedStatement deleteItemStatStatement =
                             connection.prepareStatement(
-                                    "DELETE FROM itemstat_data WHERE id = ? AND stat = ?"
+                                    "DELETE FROM item_stat WHERE item_id = ? AND item_stat_type = ?"
                             )
             ) {
                 deleteItemStatStatement.setString(1, id);
@@ -199,7 +235,7 @@ public final class ItemManager {
                 final @NonNull Connection connection = databaseManager.getConnection();
                 final @NonNull PreparedStatement insertItemStatStatement =
                         connection.prepareStatement(
-                                "INSERT INTO itemstat_data (id, stat, value) VALUES(?, ?, ?)"
+                                "INSERT INTO item_stat (item_id, item_stat_type, item_stat_value) VALUES(?, ?, ?)"
                         )
         ) {
             insertItemStatStatement.setString(1, id);
@@ -221,7 +257,7 @@ public final class ItemManager {
                 final @NonNull Connection connection = databaseManager.getConnection();
                 final @NonNull PreparedStatement loadItemsStatement =
                         connection.prepareStatement(
-                                "SELECT * FROM item_data"
+                                "SELECT * FROM item"
                         )
         ) {
             if (!loadItemsStatement.execute()) {
@@ -231,9 +267,9 @@ public final class ItemManager {
 
                 while (itemsResultSet.next()) {
                     final @NonNull String id = itemsResultSet.getString("id");
-                    final @NonNull ItemType type = ItemType.valueOf(itemsResultSet.getString("type"));
-                    final @NonNull Rarity rarity = Rarity.valueOf(itemsResultSet.getString("rarity"));
-                    final @NonNull ItemStack itemStack = ItemSerializer.ItemStackFromBase64(itemsResultSet.getString("itemstack"));
+                    final @NonNull ItemType type = ItemType.valueOf(itemsResultSet.getString("item_type"));
+                    final @NonNull Rarity rarity = Rarity.valueOf(itemsResultSet.getString("item_rarity"));
+                    final @NonNull ItemStack itemStack = ItemSerializer.ItemStackFromBase64(itemsResultSet.getString("item_item_stack"));
 
                     final @NonNull Item item = new Item(id, type, rarity, itemStack);
 
@@ -241,7 +277,7 @@ public final class ItemManager {
                             final @NonNull Connection connection2 = databaseManager.getConnection();
                             final @NonNull PreparedStatement loadItemStatsStatement =
                                     connection2.prepareStatement(
-                                            "SELECT * FROM itemstat_data WHERE id = ?"
+                                            "SELECT * FROM item_stat WHERE item_id = ?"
                                     )
                     ) {
                         loadItemStatsStatement.setString(1, id);
@@ -252,8 +288,8 @@ public final class ItemManager {
                         try (final @NonNull ResultSet itemStatsResultSet = loadItemStatsStatement.getResultSet()) {
 
                             while (itemStatsResultSet.next()) {
-                                final @NonNull ItemStat stat = ItemStat.valueOf(itemStatsResultSet.getString("stat"));
-                                final double value = itemStatsResultSet.getDouble("value");
+                                final @NonNull ItemStat stat = ItemStat.valueOf(itemStatsResultSet.getString("item_stat_type"));
+                                final double value = itemStatsResultSet.getDouble("item_stat_value");
 
                                 item.setStat(stat, value);
                             }

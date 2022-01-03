@@ -1,6 +1,7 @@
 package com.lokkeestudios.skylands.npcsystem.npc;
 
 import com.lokkeestudios.skylands.core.database.DatabaseManager;
+import com.lokkeestudios.skylands.core.utils.Constants;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -40,7 +41,34 @@ public final class NpcManager {
         this.npcRegistry = npcRegistry;
         this.databaseManager = databaseManager;
 
-        loadNpcs();
+        setupDataTables();
+    }
+
+    /**
+     * Sets up the required tables for the {@link NpcRegistry} data, if needed.
+     */
+    public void setupDataTables() {
+        try (
+                final @NonNull Connection connection = databaseManager.getConnection();
+                final @NonNull PreparedStatement createNpcDataStatement =
+                        connection.prepareStatement(
+                                " CREATE TABLE IF NOT EXISTS npc " +
+                                        "(id VARCHAR(30) not NULL, " +
+                                        " npc_type VARCHAR(30) not NULL, " +
+                                        " npc_skin_id VARCHAR(1000) not NULL, " +
+                                        " npc_name VARCHAR(30) not NULL, " +
+                                        " npc_title VARCHAR(16) not NULL, " +
+                                        " npc_world VARCHAR(30) not NULL, " +
+                                        " npc_x DOUBLE not NULL, " +
+                                        " npc_y DOUBLE not NULL, " +
+                                        " npc_z DOUBLE not NULL, " +
+                                        " PRIMARY KEY ( id ))"
+                        )
+        ) {
+            createNpcDataStatement.execute();
+        } catch (final @NonNull SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     /**
@@ -53,20 +81,23 @@ public final class NpcManager {
                     final @NonNull Connection connection = databaseManager.getConnection();
                     final @NonNull PreparedStatement saveNpcStatement =
                             connection.prepareStatement(
-                                    "UPDATE npc_data SET type = ?, skinid = ?, name = ?, world = ?, x = ?, y = ?, z = ? WHERE id = ?"
+                                    "UPDATE npc SET npc_type = ?, npc_skin_id = ?, npc_name = ?, npc_title = ?, " +
+                                            "npc_world = ?, npc_x = ?, npc_y = ?, npc_z = ? WHERE id = ?"
                             )
             ) {
                 final @NonNull Location npcLocation = npc.getLocation();
 
-                saveNpcStatement.setString(1, npc.getType().toString());
+                saveNpcStatement.setString(1, npc.getType().name());
                 saveNpcStatement.setString(2, npc.getSkinId());
-                saveNpcStatement.setString(3, npc.getType().name());
-                saveNpcStatement.setString(4, npcLocation.getWorld().getName());
-                saveNpcStatement.setDouble(5, npcLocation.getX());
-                saveNpcStatement.setDouble(6, npcLocation.getY());
-                saveNpcStatement.setDouble(7, npcLocation.getZ());
-                saveNpcStatement.setString(8, npc.getId());
+                saveNpcStatement.setString(3, npc.getName());
+                saveNpcStatement.setString(4, npc.getTitle());
+                saveNpcStatement.setString(5, npcLocation.getWorld().getName());
+                saveNpcStatement.setDouble(6, npcLocation.getX());
+                saveNpcStatement.setDouble(7, npcLocation.getY());
+                saveNpcStatement.setDouble(8, npcLocation.getZ());
+                saveNpcStatement.setString(9, npc.getId());
                 saveNpcStatement.executeUpdate();
+                npc.remove();
             } catch (final @NonNull SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -77,38 +108,43 @@ public final class NpcManager {
      * Creates a {@link Npc} and registers
      * it in the {@link NpcRegistry}.
      *
-     * @param id     the unique String id of the Npc
-     * @param type   the type of the Npc
-     * @param skinId the skin id of the Npc
-     * @param name   the name of the Npc
+     * @param id       the unique String id of the Npc
+     * @param type     the type of the Npc
+     * @param name     the name of the Npc
+     * @param location the location of the Npc
      */
     public void createNpc(
             final @NonNull String id,
             final @NonNull NpcType type,
-            final @NonNull String skinId,
             final @NonNull String name,
             final @NonNull Location location
     ) {
+        final @NonNull String skinId = Constants.Skins.SKIN_NPC_DEFAULT;
+        final @NonNull String title = Constants.Text.NPC_TITLE_DEFAULT;
+
         try (
                 final @NonNull Connection connection = databaseManager.getConnection();
                 final @NonNull PreparedStatement insertNpcStatement =
                         connection.prepareStatement(
-                                "INSERT INTO npc_data (id, type, skinid, name) VALUES(?, ?, ?, ?)"
+                                "INSERT INTO npc (id, npc_type, npc_skin_id, npc_name, npc_title, " +
+                                        "npc_world, npc_x, npc_y, npc_z) " +
+                                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)"
                         )
         ) {
             insertNpcStatement.setString(1, id);
             insertNpcStatement.setString(2, type.toString());
             insertNpcStatement.setString(3, skinId);
             insertNpcStatement.setString(4, name);
-            insertNpcStatement.setString(4, location.getWorld().getName());
-            insertNpcStatement.setDouble(5, location.getX());
-            insertNpcStatement.setDouble(6, location.getY());
-            insertNpcStatement.setDouble(7, location.getZ());
+            insertNpcStatement.setString(5, title);
+            insertNpcStatement.setString(6, location.getWorld().getName());
+            insertNpcStatement.setDouble(7, location.getX());
+            insertNpcStatement.setDouble(8, location.getY());
+            insertNpcStatement.setDouble(9, location.getZ());
             insertNpcStatement.executeUpdate();
         } catch (final @NonNull SQLException e) {
             throw new RuntimeException(e);
         }
-        final @NonNull Npc npc = new Npc(id, type, skinId, name, location);
+        final @NonNull Npc npc = new Npc(id, type, skinId, name, title, location);
 
         npcRegistry.registerNpc(npc);
     }
@@ -124,7 +160,7 @@ public final class NpcManager {
                 final @NonNull Connection connection = databaseManager.getConnection();
                 final @NonNull PreparedStatement deleteNpcStatement =
                         connection.prepareStatement(
-                                "DELETE FROM npc_data WHERE id = ?"
+                                "DELETE FROM npc WHERE id = ?"
                         )
         ) {
             deleteNpcStatement.setString(1, id);
@@ -132,6 +168,7 @@ public final class NpcManager {
         } catch (final @NonNull SQLException e) {
             throw new RuntimeException(e);
         }
+        removeNpc(id);
         npcRegistry.unregisterNpc(id);
     }
 
@@ -160,6 +197,18 @@ public final class NpcManager {
     }
 
     /**
+     * Sets the title of a {@link Npc}.
+     *
+     * @param id    the id of the Npc
+     * @param title the title which is to be set
+     */
+    public void setTitle(final @NonNull String id, final @NonNull String title) {
+        final @NonNull Npc npc = npcRegistry.getNpcFromId(id);
+
+        npc.setTitle(title);
+    }
+
+    /**
      * Sets the {@link Location} of a {@link Npc}.
      *
      * @param id       the id of the Npc
@@ -180,7 +229,7 @@ public final class NpcManager {
                 final @NonNull Connection connection = databaseManager.getConnection();
                 final @NonNull PreparedStatement loadNpcsStatement =
                         connection.prepareStatement(
-                                "SELECT * FROM npc_data"
+                                "SELECT * FROM npc"
                         )
         ) {
             if (!loadNpcsStatement.execute()) {
@@ -190,18 +239,19 @@ public final class NpcManager {
 
                 while (npcsResultSet.next()) {
                     final @NonNull String id = npcsResultSet.getString("id");
-                    final @NonNull NpcType type = NpcType.valueOf(npcsResultSet.getString("type"));
-                    final @NonNull String skinId = npcsResultSet.getString("skinid");
-                    final @NonNull String name = npcsResultSet.getString("name");
+                    final @NonNull NpcType type = NpcType.valueOf(npcsResultSet.getString("npc_type"));
+                    final @NonNull String skinId = npcsResultSet.getString("npc_skin_id");
+                    final @NonNull String name = npcsResultSet.getString("npc_name");
+                    final @NonNull String title = npcsResultSet.getString("npc_title");
 
-                    final @NonNull World world = Objects.requireNonNull(Bukkit.getWorld(npcsResultSet.getString("world")));
-                    final double x = npcsResultSet.getDouble("x");
-                    final double y = npcsResultSet.getDouble("y");
-                    final double z = npcsResultSet.getDouble("z");
+                    final @NonNull World world = Objects.requireNonNull(Bukkit.getWorld(npcsResultSet.getString("npc_world")));
+                    final double x = npcsResultSet.getDouble("npc_x");
+                    final double y = npcsResultSet.getDouble("npc_y");
+                    final double z = npcsResultSet.getDouble("npc_z");
 
                     final @NonNull Location location = new Location(world, x, y, z);
 
-                    final @NonNull Npc npc = new Npc(id, type, skinId, name, location);
+                    final @NonNull Npc npc = new Npc(id, type, skinId, name, title, location);
 
                     npcRegistry.registerNpc(npc);
                 }
@@ -209,5 +259,16 @@ public final class NpcManager {
         } catch (final @NonNull SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    /**
+     * Removes the entity player of a {@link Npc}.
+     *
+     * @param id the id of the Npc
+     */
+    public void removeNpc(final @NonNull String id) {
+        final @NonNull Npc npc = npcRegistry.getNpcFromId(id);
+
+        npc.remove();
     }
 }

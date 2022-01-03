@@ -1,6 +1,7 @@
 package com.lokkeestudios.skylands.core.utils;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.ComponentLike;
 import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;
@@ -17,6 +18,16 @@ import java.util.PrimitiveIterator;
  * @version 0.1
  */
 public final class TextUtil {
+
+    /**
+     * Resets the {@link Component} to the plain default styling.
+     *
+     * @param component the Component to be modified
+     * @return a Component with reset styling
+     */
+    public static Component resetDefaults(final ComponentLike component) {
+        return Constants.Text.RESET_DEFAULTS.append(component);
+    }
 
     /**
      * Applies a gradient between the {@link RGBLike} colors a and b to a {@link Component}.

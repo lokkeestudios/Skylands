@@ -1,7 +1,7 @@
 package com.lokkeestudios.skylands.core;
 
-import com.lokkeestudios.skylands.itemsystem.ItemFilter;
 import com.lokkeestudios.skylands.core.utils.TextUtil;
+import com.lokkeestudios.skylands.itemsystem.ItemFilter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.format.TextDecoration;

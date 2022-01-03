@@ -1,4 +1,4 @@
-package com.lokkeestudios.skylands.itemsystem.gui;
+package com.lokkeestudios.skylands.npcsystem.npc.gui;
 
 import com.github.stefvanschie.inventoryframework.adventuresupport.ComponentHolder;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
@@ -9,16 +9,18 @@ import com.github.stefvanschie.inventoryframework.pane.PaginatedPane;
 import com.github.stefvanschie.inventoryframework.pane.Pane;
 import com.github.stefvanschie.inventoryframework.pane.StaticPane;
 import com.github.stefvanschie.inventoryframework.pane.util.Mask;
-import com.lokkeestudios.skylands.core.Rarity;
 import com.lokkeestudios.skylands.core.utils.Constants;
 import com.lokkeestudios.skylands.core.utils.TextUtil;
 import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
 import com.lokkeestudios.skylands.itemsystem.Item;
-import com.lokkeestudios.skylands.itemsystem.ItemFilter;
-import com.lokkeestudios.skylands.itemsystem.ItemRegistry;
-import com.lokkeestudios.skylands.itemsystem.ItemType;
+import com.lokkeestudios.skylands.npcsystem.npc.Npc;
+import com.lokkeestudios.skylands.npcsystem.npc.NpcFilter;
+import com.lokkeestudios.skylands.npcsystem.npc.NpcRegistry;
+import com.lokkeestudios.skylands.npcsystem.npc.NpcType;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -27,53 +29,47 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.function.Function;
 
 /**
- * The item gui - an interactive way to manage and oversee all {@link Item}s at once.
+ * The npc gui - an interactive way to manage and oversee all {@link Npc}s at once.
  */
-public final class ItemGui {
+public final class NpcGui {
 
     /**
-     * The main {@link ItemRegistry} instance,
+     * The main {@link NpcRegistry} instance,
      * which is used for gui functionality.
      */
-    private final @NonNull ItemRegistry itemRegistry;
+    private final @NonNull NpcRegistry npcRegistry;
 
     /**
-     * The filter for {@link ItemType}.
+     * The filter for {@link NpcType}.
      * <p>
-     * {@link Item}s of any other ItemType are being removed.
+     * {@link Npc}s of any other NpcType are being removed.
      */
-    private final @Nullable ItemType typeFilter;
-
-    /**
-     * The filter for {@link Rarity}.
-     * <p>
-     * {@link Item}s of any other Rarity are being removed.
-     */
-    private final @Nullable Rarity rarityFilter;
+    private final @Nullable NpcType typeFilter;
 
     /**
      * The {@link SortFilter}.
      * <p>
-     * Indicates on what data {@link Item}s are being sorted.
+     * Indicates on what data {@link Npc}s are being sorted.
      */
     private final @Nullable SortFilter sortFilter;
 
     /**
      * The String filter.
      * <p>
-     * {@link Item}s whose name does not contain
+     * {@link Npc}s whose name does not contain
      * the filter are being removed.
      */
     private final @Nullable String searchFilter;
 
     /**
-     * The title of the item gui.
+     * The title of the npc gui.
      */
-    private final @NonNull ComponentHolder title = ComponentHolder.of(TextUtil.toBoldComponentWithSystemGradient("Items Menu"));
+    private final @NonNull ComponentHolder title = ComponentHolder.of(TextUtil.toBoldComponentWithSystemGradient("Npcs Menu"));
 
     /**
      * The main gui object.
@@ -81,47 +77,43 @@ public final class ItemGui {
     private ChestGui gui;
 
     /**
-     * Constructs an {@link ItemGui}.
+     * Constructs a {@link NpcGui}.
      *
-     * @param itemRegistry the main {@link ItemRegistry} instance
+     * @param npcRegistry the main {@link NpcRegistry} instance
      */
-    public ItemGui(
-            final @NonNull ItemRegistry itemRegistry
+    public NpcGui(
+            final @NonNull NpcRegistry npcRegistry
     ) {
         searchFilter = null;
         sortFilter = null;
         typeFilter = null;
-        rarityFilter = null;
 
-        this.itemRegistry = itemRegistry;
+        this.npcRegistry = npcRegistry;
 
         constructGui();
     }
 
     /**
-     * Constructs an {@link ItemGui}.
+     * Constructs a {@link NpcGui}.
      * <p>
      * With filter parameters, <b>only</b> for internal use
      *
      * @param searchFilter the active search filter String of the gui
      * @param sortFilter   the active {@link SortFilter} of the gui
-     * @param typeFilter   the active type filter {@link ItemType} of the gui
-     * @param rarityFilter the active rarity filter {@link Rarity} of the gui
-     * @param itemRegistry the main {@link ItemRegistry} instance
+     * @param typeFilter   the active type filter {@link NpcType} of the gui
+     * @param npcRegistry  the main {@link NpcRegistry} instance
      */
-    private ItemGui(
+    private NpcGui(
             final @Nullable String searchFilter,
             final @Nullable SortFilter sortFilter,
-            final @Nullable ItemType typeFilter,
-            final @Nullable Rarity rarityFilter,
-            final @NonNull ItemRegistry itemRegistry
+            final @Nullable NpcType typeFilter,
+            final @NonNull NpcRegistry npcRegistry
     ) {
         this.searchFilter = searchFilter;
         this.sortFilter = sortFilter;
         this.typeFilter = typeFilter;
-        this.rarityFilter = rarityFilter;
 
-        this.itemRegistry = itemRegistry;
+        this.npcRegistry = npcRegistry;
 
         constructGui();
     }
@@ -150,26 +142,21 @@ public final class ItemGui {
 
         gui.addPane(backgroundPane);
 
-        final @NonNull PaginatedPane itemsPane = new PaginatedPane(1, 1, 7, 4);
+        final @NonNull PaginatedPane npcsPane = new PaginatedPane(1, 1, 7, 4);
 
-        itemsPane.setOnClick(event -> {
-            if (event.getCurrentItem() != null)
-                event.getWhoClicked().getInventory().addItem(event.getCurrentItem());
-        });
+        npcsPane.populateWithGuiItems(getFilteredGuiItems(npcRegistry.getNpcs()));
 
-        itemsPane.populateWithItemStacks(getFilteredItemStacks(itemRegistry.getItems()));
-
-        gui.addPane(itemsPane);
+        gui.addPane(npcsPane);
 
         final @NonNull StaticPane infoPane = new StaticPane(4, 0, 1, 1, Pane.Priority.HIGHEST);
 
         final @NonNull ItemStack infoItem = ItemBuilder.from(Material.OAK_SIGN)
-                .name(TextUtil.toComponentWithSystemGradient("Items Menu"))
+                .name(TextUtil.toComponentWithSystemGradient("Npcs Menu"))
                 .lore(
-                        Component.text("A database of every single existing item.", Constants.Text.STYLE_DEFAULT),
+                        Component.text("A database of every single existing npc.", Constants.Text.STYLE_DEFAULT),
                         Component.empty(),
-                        Component.text("Currently existing items: ", Constants.Text.STYLE_DEFAULT)
-                                .append(Component.text(itemRegistry.getItems().size(), Constants.Text.STYLE_HIGHLIGHTED))
+                        Component.text("Currently existing npcs: ", Constants.Text.STYLE_DEFAULT)
+                                .append(Component.text(npcRegistry.getNpcs().size(), Constants.Text.STYLE_HIGHLIGHTED))
                 ).build();
 
         infoPane.addItem(new GuiItem(infoItem), 0, 0);
@@ -195,7 +182,7 @@ public final class ItemGui {
                         Constants.Text.SYMBOL_ARROW_LEFT + " Previous Page", Constants.Text.STYLE_HIGHLIGHTED
                 ))
                 .build();
-        updateNavigationDisplay(previousItem, 0, itemsPane.getPages());
+        updateNavigationDisplay(previousItem, 0, npcsPane.getPages());
 
         final @NonNull ItemStack nextItem = ItemBuilder.head()
                 .base64(Constants.Heads.BASE64_ARROW_RIGHT)
@@ -203,15 +190,15 @@ public final class ItemGui {
                         "Next Page " + Constants.Text.SYMBOL_ARROW_RIGHT, Constants.Text.STYLE_HIGHLIGHTED
                 ))
                 .build();
-        updateNavigationDisplay(nextItem, 2, itemsPane.getPages());
+        updateNavigationDisplay(nextItem, 2, npcsPane.getPages());
 
         previousPane.addItem(new GuiItem(previousItem, event -> {
-            itemsPane.setPage(itemsPane.getPage() - 1);
+            npcsPane.setPage(npcsPane.getPage() - 1);
 
-            updateNavigationDisplay(previousItem, itemsPane.getPage(), itemsPane.getPages());
-            updateNavigationDisplay(nextItem, (itemsPane.getPage() + 2), itemsPane.getPages());
+            updateNavigationDisplay(previousItem, npcsPane.getPage(), npcsPane.getPages());
+            updateNavigationDisplay(nextItem, (npcsPane.getPage() + 2), npcsPane.getPages());
 
-            if (itemsPane.getPage() == 0) {
+            if (npcsPane.getPage() == 0) {
                 previousPane.setVisible(false);
             }
 
@@ -220,15 +207,15 @@ public final class ItemGui {
         }), 0, 0);
 
         previousPane.setVisible(false);
-        if (itemsPane.getPages() <= 1) nextPane.setVisible(false);
+        if (npcsPane.getPages() <= 1) nextPane.setVisible(false);
 
         nextPane.addItem(new GuiItem(nextItem, event -> {
-            itemsPane.setPage(itemsPane.getPage() + 1);
+            npcsPane.setPage(npcsPane.getPage() + 1);
 
-            updateNavigationDisplay(previousItem, itemsPane.getPage(), itemsPane.getPages());
-            updateNavigationDisplay(nextItem, (itemsPane.getPage() + 2), itemsPane.getPages());
+            updateNavigationDisplay(previousItem, npcsPane.getPage(), npcsPane.getPages());
+            updateNavigationDisplay(nextItem, (npcsPane.getPage() + 2), npcsPane.getPages());
 
-            if (itemsPane.getPage() == itemsPane.getPages() - 1) {
+            if (npcsPane.getPage() == npcsPane.getPages() - 1) {
                 nextPane.setVisible(false);
             }
 
@@ -270,7 +257,7 @@ public final class ItemGui {
             final @NonNull Player player = (Player) event.getWhoClicked();
 
             if (event.isRightClick() && searchFilter != null) {
-                new ItemGui(null, sortFilter, typeFilter, rarityFilter, itemRegistry).open(player);
+                new NpcGui(null, sortFilter, typeFilter, npcRegistry).open(player);
                 return;
             }
             openSearchGui(player);
@@ -287,10 +274,10 @@ public final class ItemGui {
         toolsPane.addItem(new GuiItem(sortFilterItem, event -> {
             final @Nullable SortFilter newSortFilter = getNewFilter(sortFilter, SortFilter.values(), event);
 
-            new ItemGui(searchFilter, newSortFilter, typeFilter, rarityFilter, itemRegistry).open((Player) event.getWhoClicked());
+            new NpcGui(searchFilter, newSortFilter, typeFilter, npcRegistry).open((Player) event.getWhoClicked());
         }), 3, 0);
 
-        final @NonNull List<Component> typeFilterLore = getFilterItemLore(typeFilter, ItemType.values());
+        final @NonNull List<Component> typeFilterLore = getFilterItemLore(typeFilter, NpcType.values());
 
         final @NonNull ItemStack typeFilterItem = ItemBuilder
                 .from(Material.ARMOR_STAND)
@@ -299,24 +286,10 @@ public final class ItemGui {
                 .build();
 
         toolsPane.addItem(new GuiItem(typeFilterItem, event -> {
-            final @Nullable ItemType newTypeFilter = getNewFilter(typeFilter, ItemType.values(), event);
+            final @Nullable NpcType newTypeFilter = getNewFilter(typeFilter, NpcType.values(), event);
 
-            new ItemGui(searchFilter, sortFilter, newTypeFilter, rarityFilter, itemRegistry).open((Player) event.getWhoClicked());
+            new NpcGui(searchFilter, sortFilter, newTypeFilter, npcRegistry).open((Player) event.getWhoClicked());
         }), 5, 0);
-
-        final @NonNull List<Component> rarityFilterLore = getFilterItemLore(rarityFilter, Rarity.values());
-
-        final @NonNull ItemStack rarityFilterItem = ItemBuilder
-                .from(Material.ENDER_EYE)
-                .name(Component.text("Rarity", Constants.Text.STYLE_HIGHLIGHTED))
-                .lore(rarityFilterLore)
-                .build();
-
-        toolsPane.addItem(new GuiItem(rarityFilterItem, event -> {
-            final @Nullable Rarity newRarityFilter = getNewFilter(rarityFilter, Rarity.values(), event);
-
-            new ItemGui(searchFilter, sortFilter, typeFilter, newRarityFilter, itemRegistry).open((Player) event.getWhoClicked());
-        }), 6, 0);
 
         gui.addPane(toolsPane);
     }
@@ -345,7 +318,7 @@ public final class ItemGui {
         final @NonNull StaticPane backPane = new StaticPane(0, 0, 1, 1);
 
         backPane.addItem(new GuiItem(backItem, event ->
-                new ItemGui(searchFilter, sortFilter, typeFilter, rarityFilter, itemRegistry).open(player)
+                new NpcGui(searchFilter, sortFilter, typeFilter, npcRegistry).open(player)
         ), 0, 0);
 
         final @NonNull StaticPane backgroundPane = new StaticPane(0, 0, 1, 1);
@@ -357,7 +330,7 @@ public final class ItemGui {
         confirmPane.addItem(new GuiItem(confirmItem, event -> {
             final @NonNull String newSearchFilter = searchGui.getRenameText();
 
-            new ItemGui(newSearchFilter, sortFilter, typeFilter, rarityFilter, itemRegistry).open(player);
+            new NpcGui(newSearchFilter, sortFilter, typeFilter, npcRegistry).open(player);
         }), 0, 0);
 
         searchGui.getFirstItemComponent().addPane(backgroundPane);
@@ -368,29 +341,76 @@ public final class ItemGui {
     }
 
     /**
-     * Filters out and sorts the {@link Item}s based on the active filters.
+     * Filters out and sorts the {@link Npc}s based on the active filters.
      *
-     * @param items the list of Items to be filtered and sorted
-     * @return {@link List} of the Items' {@link Item#getBuildItemStack}s.
+     * @param npcs the list of Npcs to be filtered and sorted
+     * @return {@link List} of the Npcs' {@link #getNpcGuiItem}s.
      */
-    private @NonNull List<ItemStack> getFilteredItemStacks(final @NonNull List<Item> items) {
+    private @NonNull List<GuiItem> getFilteredGuiItems(final @NonNull List<Npc> npcs) {
         if (searchFilter != null) {
-            items.removeIf(item -> !StringUtils.containsIgnoreCase(item.getName(), searchFilter));
+            npcs.removeIf(npc -> !StringUtils.containsIgnoreCase(npc.getName(), searchFilter));
         }
         if (typeFilter != null) {
-            items.removeIf(item -> item.getType() != typeFilter);
-        }
-        if (rarityFilter != null) {
-            items.removeIf(item -> item.getRarity() != rarityFilter);
+            npcs.removeIf(npc -> npc.getType() != typeFilter);
         }
         if (sortFilter != null) {
-            items.sort(sortFilter.compareFunction.apply(items));
+            npcs.sort(sortFilter.compareFunction.apply(npcs));
         }
-        final @NonNull List<ItemStack> itemStacks = new ArrayList<>();
+        final @NonNull List<GuiItem> guiItems = new ArrayList<>();
 
-        items.forEach(item -> itemStacks.add(item.getBuildItemStack()));
+        npcs.forEach(npc -> guiItems.add(getNpcGuiItem(npc)));
 
-        return itemStacks;
+        return guiItems;
+    }
+
+    /**
+     * Constructs the displayed {@link GuiItem} of a {@link Npc}.
+     *
+     * @param npc the to be displayed Npc
+     * @return the constructed ItemStack.
+     */
+    private @NonNull GuiItem getNpcGuiItem(final @NonNull Npc npc) {
+        final @NonNull Location location = npc.getLocation();
+
+        final @NonNull DecimalFormat decimalFormat = new DecimalFormat();
+        decimalFormat.setMaximumFractionDigits(2);
+
+        final @NonNull List<Component> guiItemLore = new ArrayList<>();
+
+        if (!npc.getTitle().equals(" ")) {
+            guiItemLore.add(TextUtil.resetDefaults(MiniMessage.get().parse(npc.getTitle())));
+        }
+        guiItemLore.addAll(Arrays.asList(
+                Component.empty(),
+                Component.text("Type: ", Constants.Text.STYLE_DEFAULT)
+                        .append(Component.text(npc.getType().getName(), Constants.Text.STYLE_HIGHLIGHTED)
+                        ),
+                Component.empty(),
+                Component.text("World: ", Constants.Text.STYLE_DEFAULT)
+                        .append(Component.text(location.getWorld().getName(), Constants.Text.STYLE_HIGHLIGHTED)
+                        ),
+                Component.text("Coords: ", Constants.Text.STYLE_DEFAULT)
+                        .append(Component.text(
+                                decimalFormat.format(location.getX()) + ", "
+                                        + decimalFormat.format(location.getY()) + ", "
+                                        + decimalFormat.format(location.getZ()),
+                                Constants.Text.STYLE_HIGHLIGHTED)
+                        ),
+                Component.empty(),
+                Component.text("Click to teleport to Npc!", Constants.Text.STYLE_INFO)
+        ));
+
+        final @NonNull GuiItem guiItem = new GuiItem(ItemBuilder.head()
+                .base64(npc.getSkinId())
+                .name(TextUtil.resetDefaults(MiniMessage.get().parse(npc.getName())))
+                .lore(guiItemLore)
+                .build(), event -> {
+            final @NonNull Player player = (Player) event.getWhoClicked();
+            player.teleportAsync(location);
+        });
+
+
+        return guiItem;
     }
 
     /**
@@ -417,14 +437,14 @@ public final class ItemGui {
     }
 
     /**
-     * Gets the lore for an {@link ItemFilter} {@link ItemStack}.
+     * Gets the lore for a {@link NpcFilter} {@link ItemStack}.
      *
      * @param filter       the filter variable, which has the current filter assigned
      * @param filterValues the array of all values of the filter
      * @param <T>          the type of the filter
      * @return the lore for the ItemStack
      */
-    private <T extends ItemFilter<?>> List<Component> getFilterItemLore(
+    private <T extends NpcFilter<?>> List<Component> getFilterItemLore(
             final @Nullable T filter,
             final @NonNull T[] filterValues
     ) {
@@ -449,7 +469,7 @@ public final class ItemGui {
     }
 
     /**
-     * Gets the new {@link ItemFilter} based on what happens in the
+     * Gets the new {@link NpcFilter} based on what happens in the
      * {@link InventoryClickEvent} when the filter {@link ItemStack} is clicked.
      *
      * @param filter       the filter variable, which has the current filter assigned
@@ -458,7 +478,7 @@ public final class ItemGui {
      * @param <T>          the type of the filter
      * @return the new filter
      */
-    private <T extends ItemFilter<?>> T getNewFilter(
+    private <T extends NpcFilter<?>> T getNewFilter(
             final @Nullable T filter,
             final @NonNull T[] filterValues,
             final @NonNull InventoryClickEvent event
@@ -477,7 +497,7 @@ public final class ItemGui {
     }
 
     /**
-     * Opens and renders the {@link ItemGui} for a {@link Player}.
+     * Opens and renders the {@link NpcGui} for a {@link Player}.
      *
      * @param player the player for which the gui should be shown
      */
@@ -488,22 +508,22 @@ public final class ItemGui {
     /**
      * Holds all the sort filters.
      */
-    private enum SortFilter implements ItemFilter<SortFilter> {
+    private enum SortFilter implements NpcFilter<SortFilter> {
 
         /**
          * The name sort filter.
          */
-        NAME("Name", items -> Comparator.comparing(Item::getName)),
-
-        /**
-         * The rarity sort filter.
-         */
-        RARITY("Rarity", items -> Comparator.comparing((Item item) -> item.getRarity().getWeight())),
+        NAME("Name", npcs -> Comparator.comparing(Npc::getName)),
 
         /**
          * The type sort filter.
          */
-        TYPE("Type", items -> Comparator.comparing(Item::getType));
+        TYPE("Type", npcs -> Comparator.comparing(Npc::getType)),
+
+        /**
+         * The world sort filter.
+         */
+        WORLD("World", npcs -> Comparator.comparing((Npc npc) -> npc.getLocation().getWorld().getName()));
 
         /**
          * The name of the sort filter.
@@ -516,7 +536,7 @@ public final class ItemGui {
          * This function is used for sorting the {@link Item}s
          * based on the active SortFilter.
          */
-        private final @NonNull Function<List<Item>, Comparator<Item>> compareFunction;
+        private final @NonNull Function<List<Npc>, Comparator<Npc>> compareFunction;
 
         /**
          * Constructs a {@link SortFilter}.
@@ -524,7 +544,7 @@ public final class ItemGui {
          * @param name            the name of the sort filter
          * @param compareFunction the compare {@link Function} of the sort filter
          */
-        SortFilter(final @NonNull String name, final @NonNull Function<List<Item>, Comparator<Item>> compareFunction) {
+        SortFilter(final @NonNull String name, final @NonNull Function<List<Npc>, Comparator<Npc>> compareFunction) {
             this.name = name;
             this.compareFunction = compareFunction;
         }
