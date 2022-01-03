@@ -8,6 +8,7 @@ A collection of changes that were not pushed to the `master` branch yet.
 
 ### Added
 - `CHANGELOG` file to document notable changes
+- Packet management dependency `packetevents`
 
 ### Changed
 - `groupId` name to `com.lokkeestudios`
@@ -15,6 +16,8 @@ A collection of changes that were not pushed to the `master` branch yet.
 - Some `Database` variable names of the `ItemManager`, to be more self-explanatory
 - Moved to Paper 1.18
 - Moved to Java 17
+- Database structure and tables being set up automatically, rather than manually
+- plugin.yml being set up automatically, with the help of the `plugin-yml` gradle plugin
 
 ### Deprecated
 
