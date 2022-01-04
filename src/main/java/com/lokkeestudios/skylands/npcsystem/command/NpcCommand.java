@@ -1,4 +1,4 @@
-package com.lokkeestudios.skylands.npcsystem.npc.command;
+package com.lokkeestudios.skylands.npcsystem.command;
 
 import cloud.commandframework.ArgumentDescription;
 import cloud.commandframework.Command;
@@ -8,15 +8,16 @@ import cloud.commandframework.arguments.standard.StringArgument;
 import cloud.commandframework.bukkit.parsers.PlayerArgument;
 import cloud.commandframework.context.CommandContext;
 import com.lokkeestudios.skylands.core.utils.Constants;
-import com.lokkeestudios.skylands.npcsystem.npc.Npc;
-import com.lokkeestudios.skylands.npcsystem.npc.NpcManager;
-import com.lokkeestudios.skylands.npcsystem.npc.NpcRegistry;
-import com.lokkeestudios.skylands.npcsystem.npc.NpcType;
-import com.lokkeestudios.skylands.npcsystem.npc.gui.NpcGui;
+import com.lokkeestudios.skylands.npcsystem.Npc;
+import com.lokkeestudios.skylands.npcsystem.NpcManager;
+import com.lokkeestudios.skylands.npcsystem.NpcRegistry;
+import com.lokkeestudios.skylands.npcsystem.NpcType;
+import com.lokkeestudios.skylands.npcsystem.gui.NpcGui;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -63,10 +64,9 @@ public final class NpcCommand {
     public void register(
             final @NonNull CommandManager<CommandSender> manager
     ) {
-        final Command.Builder<CommandSender> builder = manager.commandBuilder("npc", "npcs", "npcsystem")
-                .senderType(Player.class);
+        final Command.Builder<CommandSender> builder = manager.commandBuilder("npc", "npcs", "npcsystem");
 
-        manager.command(builder.handler(this::processOpenMenu));
+        manager.command(builder.handler(this::processOpenMenu).senderType(Player.class));
 
         manager.command(builder
                 .literal("open", ArgumentDescription.of("Opens the npcs menu"))
@@ -81,7 +81,7 @@ public final class NpcCommand {
                 .argument(EnumArgument.of(NpcType.class, "type"))
                 .argument(StringArgument.greedy("name"))
                 .permission(Constants.Permissions.ROOT_NPCSYSTEM + ".create")
-                .handler(this::processCreateNpc)
+                .handler(this::processCreateNpc).senderType(Player.class)
         );
 
         final Command.@NonNull Builder<CommandSender> setSubCommand = builder.literal("set");
@@ -95,7 +95,7 @@ public final class NpcCommand {
                 )
                 .argument(StringArgument.of("skinid"))
                 .permission(Constants.Permissions.ROOT_NPCSYSTEM + ".set.skinid")
-                .handler(this::processSetSkinId)
+                .handler(this::processSetSkinId).senderType(ConsoleCommandSender.class)
         );
 
         manager.command(setSubCommand
@@ -130,7 +130,7 @@ public final class NpcCommand {
                         .build()
                 )
                 .permission(Constants.Permissions.ROOT_NPCSYSTEM + ".set.location")
-                .handler(this::processSetLocation)
+                .handler(this::processSetLocation).senderType(Player.class)
         );
 
         manager.command(builder
@@ -253,20 +253,20 @@ public final class NpcCommand {
      * @param context the context of the given command
      */
     private void processSetSkinId(final @NonNull CommandContext<CommandSender> context) {
-        final @NonNull Player player = (Player) context.getSender();
+        final @NonNull CommandSender sender = context.getSender();
 
         final @NonNull String id = context.get("id");
         final @NonNull String skinId = context.get("skinid");
 
         if (!npcRegistry.isIdValid(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(Constants.Text.PREFIX.append(Component
                     .text("There is no existing npc with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         npcManager.setSkinId(id, skinId);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        sender.sendMessage(Constants.Text.PREFIX.append(Component
                 .text("Set the skin id of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
         ));
@@ -278,26 +278,26 @@ public final class NpcCommand {
      * @param context the context of the given command
      */
     private void processSetName(final @NonNull CommandContext<CommandSender> context) {
-        final @NonNull Player player = (Player) context.getSender();
+        final @NonNull CommandSender sender = context.getSender();
 
         final @NonNull String id = context.get("id");
         final @NonNull String name = context.get("name");
 
         if (MiniMessage.get().stripTokens(name).length() > 16) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(Constants.Text.PREFIX.append(Component
                     .text("The name of a npc may not be longer than 16 characters.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         if (!npcRegistry.isIdValid(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(Constants.Text.PREFIX.append(Component
                     .text("There is no existing npc with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         npcManager.setName(id, name);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        sender.sendMessage(Constants.Text.PREFIX.append(Component
                 .text("Set the name of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
                 .append(Component.text(" to ", Constants.Text.STYLE_DEFAULT))
@@ -311,26 +311,26 @@ public final class NpcCommand {
      * @param context the context of the given command
      */
     private void processSetTitle(final @NonNull CommandContext<CommandSender> context) {
-        final @NonNull Player player = (Player) context.getSender();
+        final @NonNull CommandSender sender = context.getSender();
 
         final @NonNull String id = context.get("id");
         final @NonNull String title = context.get("title");
 
         if (MiniMessage.get().stripTokens(title).length() > 16) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(Constants.Text.PREFIX.append(Component
                     .text("The title of a npc may not be longer than 16 characters.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         if (!npcRegistry.isIdValid(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(Constants.Text.PREFIX.append(Component
                     .text("There is no existing npc with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         npcManager.setTitle(id, title);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        sender.sendMessage(Constants.Text.PREFIX.append(Component
                 .text("Set the title of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
                 .append(Component.text(" to ", Constants.Text.STYLE_DEFAULT))
@@ -344,19 +344,19 @@ public final class NpcCommand {
      * @param context the context of the given command
      */
     private void processDeleteNpc(final @NonNull CommandContext<CommandSender> context) {
-        final @NonNull Player player = (Player) context.getSender();
+        final @NonNull CommandSender sender = context.getSender();
 
         final @NonNull String id = context.get("id");
 
         if (!npcRegistry.isIdValid(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(Constants.Text.PREFIX.append(Component
                     .text("There is no existing npc with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         npcManager.deleteNpc(id);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        sender.sendMessage(Constants.Text.PREFIX.append(Component
                 .text("Successfully deleted the npc ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_ALERT))
         ));

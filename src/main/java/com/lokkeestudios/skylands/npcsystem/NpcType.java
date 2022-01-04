@@ -1,4 +1,4 @@
-package com.lokkeestudios.skylands.npcsystem.npc;
+package com.lokkeestudios.skylands.npcsystem;
 
 import org.checkerframework.checker.nullness.qual.NonNull;
 

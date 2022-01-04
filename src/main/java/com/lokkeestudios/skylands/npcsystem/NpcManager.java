@@ -1,4 +1,4 @@
-package com.lokkeestudios.skylands.npcsystem.npc;
+package com.lokkeestudios.skylands.npcsystem;
 
 import com.lokkeestudios.skylands.core.database.DatabaseManager;
 import com.lokkeestudios.skylands.core.utils.Constants;
@@ -62,6 +62,8 @@ public final class NpcManager {
                                         " npc_x DOUBLE not NULL, " +
                                         " npc_y DOUBLE not NULL, " +
                                         " npc_z DOUBLE not NULL, " +
+                                        " npc_yaw FLOAT not NULL, " +
+                                        " npc_pitch FLOAT not NULL, " +
                                         " PRIMARY KEY ( id ))"
                         )
         ) {
@@ -82,20 +84,22 @@ public final class NpcManager {
                     final @NonNull PreparedStatement saveNpcStatement =
                             connection.prepareStatement(
                                     "UPDATE npc SET npc_type = ?, npc_skin_id = ?, npc_name = ?, npc_title = ?, " +
-                                            "npc_world = ?, npc_x = ?, npc_y = ?, npc_z = ? WHERE id = ?"
+                                            "npc_world = ?, npc_x = ?, npc_y = ?, npc_z = ?, npc_yaw = ?, npc_pitch = ? WHERE id = ?"
                             )
             ) {
                 final @NonNull Location npcLocation = npc.getLocation();
 
                 saveNpcStatement.setString(1, npc.getType().name());
-                saveNpcStatement.setString(2, npc.getSkinId());
+                saveNpcStatement.setString(2, npc.getTextureValue());
                 saveNpcStatement.setString(3, npc.getName());
                 saveNpcStatement.setString(4, npc.getTitle());
                 saveNpcStatement.setString(5, npcLocation.getWorld().getName());
                 saveNpcStatement.setDouble(6, npcLocation.getX());
                 saveNpcStatement.setDouble(7, npcLocation.getY());
                 saveNpcStatement.setDouble(8, npcLocation.getZ());
-                saveNpcStatement.setString(9, npc.getId());
+                saveNpcStatement.setFloat(9, npcLocation.getYaw());
+                saveNpcStatement.setFloat(10, npcLocation.getPitch());
+                saveNpcStatement.setString(11, npc.getId());
                 saveNpcStatement.executeUpdate();
                 npc.remove();
             } catch (final @NonNull SQLException e) {
@@ -127,8 +131,8 @@ public final class NpcManager {
                 final @NonNull PreparedStatement insertNpcStatement =
                         connection.prepareStatement(
                                 "INSERT INTO npc (id, npc_type, npc_skin_id, npc_name, npc_title, " +
-                                        "npc_world, npc_x, npc_y, npc_z) " +
-                                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                                        "npc_world, npc_x, npc_y, npc_z, npc_yaw, npc_pitch) " +
+                                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                         )
         ) {
             insertNpcStatement.setString(1, id);
@@ -140,6 +144,8 @@ public final class NpcManager {
             insertNpcStatement.setDouble(7, location.getX());
             insertNpcStatement.setDouble(8, location.getY());
             insertNpcStatement.setDouble(9, location.getZ());
+            insertNpcStatement.setFloat(10, location.getYaw());
+            insertNpcStatement.setFloat(11, location.getPitch());
             insertNpcStatement.executeUpdate();
         } catch (final @NonNull SQLException e) {
             throw new RuntimeException(e);
@@ -181,7 +187,7 @@ public final class NpcManager {
     public void setSkinId(final @NonNull String id, final @NonNull String skinId) {
         final @NonNull Npc npc = npcRegistry.getNpcFromId(id);
 
-        npc.setSkinId(skinId);
+        npc.setTextureValue(skinId);
     }
 
     /**
@@ -248,8 +254,10 @@ public final class NpcManager {
                     final double x = npcsResultSet.getDouble("npc_x");
                     final double y = npcsResultSet.getDouble("npc_y");
                     final double z = npcsResultSet.getDouble("npc_z");
+                    final float yaw = npcsResultSet.getFloat("npc_yaw");
+                    final float pitch = npcsResultSet.getFloat("npc_pitch");
 
-                    final @NonNull Location location = new Location(world, x, y, z);
+                    final @NonNull Location location = new Location(world, x, y, z, yaw, pitch);
 
                     final @NonNull Npc npc = new Npc(id, type, skinId, name, title, location);
 

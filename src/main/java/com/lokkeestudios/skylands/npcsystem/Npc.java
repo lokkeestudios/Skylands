@@ -1,4 +1,4 @@
-package com.lokkeestudios.skylands.npcsystem.npc;
+package com.lokkeestudios.skylands.npcsystem;
 
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
@@ -33,9 +33,9 @@ public class Npc {
     protected final @NonNull NpcType type;
 
     /**
-     * The skin id of the Npc.
+     * The texture value of the Npc skin.
      */
-    protected @NonNull String skinId;
+    protected @NonNull String textureValue;
 
     /**
      * The name of the Npc.
@@ -77,7 +77,7 @@ public class Npc {
     ) {
         this.id = id;
         this.type = type;
-        this.skinId = skinId;
+        this.textureValue = skinId;
         this.name = name;
         this.title = title;
         this.location = location;
@@ -118,21 +118,21 @@ public class Npc {
     }
 
     /**
-     * Gets the skin id of the Npc.
+     * Gets the texture value of the Npc skin.
      *
-     * @return the Npcs skin id
+     * @return the Npcs texture value
      */
-    public @NonNull String getSkinId() {
-        return skinId;
+    public @NonNull String getTextureValue() {
+        return textureValue;
     }
 
     /**
-     * Sets the skin id of the Npc.
+     * Sets the texture value of the Npc skin.
      *
-     * @param skinId the skin id to be set
+     * @param textureValue the texture value to be set
      */
-    public void setSkinId(final @NonNull String skinId) {
-        this.skinId = skinId;
+    public void setTextureValue(final @NonNull String textureValue) {
+        this.textureValue = textureValue;
     }
 
     /**

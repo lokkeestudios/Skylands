@@ -68,10 +68,9 @@ public final class ItemCommand {
     public void register(
             final @NonNull CommandManager<CommandSender> manager
     ) {
-        final Command.Builder<CommandSender> builder = manager.commandBuilder("item", "items", "itemsystem")
-                .senderType(Player.class);
+        final Command.Builder<CommandSender> builder = manager.commandBuilder("item", "items", "itemsystem");
 
-        manager.command(builder.handler(this::processOpenMenu));
+        manager.command(builder.handler(this::processOpenMenu).senderType(Player.class));
 
         manager.command(builder
                 .literal("open", ArgumentDescription.of("Opens the items menu"))

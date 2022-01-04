@@ -165,7 +165,7 @@ public final class Constants {
         /**
          * The {@link UUID} String of the default npc player skin.
          */
-        public static final @NonNull String SKIN_NPC_DEFAULT = "b3fa515d-7c55-4a66-8ad9-198e41b513f3";
+        public static final @NonNull String SKIN_NPC_DEFAULT = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2NiZjc4ZWE4ZTE0NGM4NjIxNGU5NTMwNDM2ZWI1MDZlNTM0YTMzZGQzMjZjNDI1MGVmMjc5ZDE5NDI0ZGMxZSJ9fX0=";
     }
 
     /**

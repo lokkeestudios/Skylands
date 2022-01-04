@@ -1,6 +1,6 @@
 package com.lokkeestudios.skylands.core.event;
 
-import com.lokkeestudios.skylands.npcsystem.npc.NpcManager;
+import com.lokkeestudios.skylands.npcsystem.NpcManager;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;

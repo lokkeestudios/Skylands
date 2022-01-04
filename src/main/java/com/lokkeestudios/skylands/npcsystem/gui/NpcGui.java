@@ -1,4 +1,4 @@
-package com.lokkeestudios.skylands.npcsystem.npc.gui;
+package com.lokkeestudios.skylands.npcsystem.gui;
 
 import com.github.stefvanschie.inventoryframework.adventuresupport.ComponentHolder;
 import com.github.stefvanschie.inventoryframework.gui.GuiItem;
@@ -13,10 +13,10 @@ import com.lokkeestudios.skylands.core.utils.Constants;
 import com.lokkeestudios.skylands.core.utils.TextUtil;
 import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
 import com.lokkeestudios.skylands.itemsystem.Item;
-import com.lokkeestudios.skylands.npcsystem.npc.Npc;
-import com.lokkeestudios.skylands.npcsystem.npc.NpcFilter;
-import com.lokkeestudios.skylands.npcsystem.npc.NpcRegistry;
-import com.lokkeestudios.skylands.npcsystem.npc.NpcType;
+import com.lokkeestudios.skylands.npcsystem.Npc;
+import com.lokkeestudios.skylands.npcsystem.NpcFilter;
+import com.lokkeestudios.skylands.npcsystem.NpcRegistry;
+import com.lokkeestudios.skylands.npcsystem.NpcType;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.apache.commons.lang.StringUtils;
@@ -401,7 +401,7 @@ public final class NpcGui {
         ));
 
         final @NonNull GuiItem guiItem = new GuiItem(ItemBuilder.head()
-                .base64(npc.getSkinId())
+                .base64(npc.getTextureValue())
                 .name(TextUtil.resetDefaults(MiniMessage.get().parse(npc.getName())))
                 .lore(guiItemLore)
                 .build(), event -> {
