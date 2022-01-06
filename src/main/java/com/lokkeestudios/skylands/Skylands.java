@@ -137,7 +137,7 @@ public final class Skylands extends JavaPlugin {
     private void registerPacketEvents() {
         final @NonNull EventManager eventManager = PacketEvents.getAPI().getEventManager();
 
-        eventManager.registerListener(new NpcSpawnPacketListener(npcRegistry), PacketListenerPriority.LOW, true);
+        eventManager.registerListener(new NpcSpawnPacketListener(), PacketListenerPriority.LOW, true);
     }
 
     /**

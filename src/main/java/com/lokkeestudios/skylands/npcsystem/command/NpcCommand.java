@@ -87,15 +87,16 @@ public final class NpcCommand {
         final Command.@NonNull Builder<CommandSender> setSubCommand = builder.literal("set");
 
         manager.command(setSubCommand
-                .literal("skinid", ArgumentDescription.of("Sets the skin id of a npc"))
+                .literal("skin", ArgumentDescription.of("Sets the skin of a npc using texture value and texture signature"))
                 .argument(StringArgument
                         .<CommandSender>newBuilder("id")
                         .withSuggestionsProvider(this::npcIdSuggestions)
                         .build()
                 )
-                .argument(StringArgument.of("skinid"))
-                .permission(Constants.Permissions.ROOT_NPCSYSTEM + ".set.skinid")
-                .handler(this::processSetSkinId).senderType(ConsoleCommandSender.class)
+                .argument(StringArgument.of("texture_value"))
+                .argument(StringArgument.of("texture_signature"))
+                .permission(Constants.Permissions.ROOT_NPCSYSTEM + ".set.skin")
+                .handler(this::processSetSkin).senderType(ConsoleCommandSender.class)
         );
 
         manager.command(setSubCommand
@@ -252,11 +253,12 @@ public final class NpcCommand {
      *
      * @param context the context of the given command
      */
-    private void processSetSkinId(final @NonNull CommandContext<CommandSender> context) {
+    private void processSetSkin(final @NonNull CommandContext<CommandSender> context) {
         final @NonNull CommandSender sender = context.getSender();
 
         final @NonNull String id = context.get("id");
-        final @NonNull String skinId = context.get("skinid");
+        final @NonNull String textureValue = context.get("texture_value");
+        final @NonNull String textureSignature = context.get("texture_signature");
 
         if (!npcRegistry.isIdValid(id)) {
             sender.sendMessage(Constants.Text.PREFIX.append(Component
@@ -264,10 +266,10 @@ public final class NpcCommand {
             ));
             return;
         }
-        npcManager.setSkinId(id, skinId);
+        npcManager.setSkin(id, textureValue, textureSignature);
 
         sender.sendMessage(Constants.Text.PREFIX.append(Component
-                .text("Set the skin id of ", Constants.Text.STYLE_DEFAULT)
+                .text("Set the skin of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
         ));
     }

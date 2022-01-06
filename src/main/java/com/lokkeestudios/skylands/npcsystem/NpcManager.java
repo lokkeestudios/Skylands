@@ -55,7 +55,8 @@ public final class NpcManager {
                                 " CREATE TABLE IF NOT EXISTS npc " +
                                         "(id VARCHAR(30) not NULL, " +
                                         " npc_type VARCHAR(30) not NULL, " +
-                                        " npc_skin_id VARCHAR(1000) not NULL, " +
+                                        " npc_texture_value VARCHAR(1000) not NULL, " +
+                                        " npc_texture_signature VARCHAR(1000) not NULL, " +
                                         " npc_name VARCHAR(30) not NULL, " +
                                         " npc_title VARCHAR(16) not NULL, " +
                                         " npc_world VARCHAR(30) not NULL, " +
@@ -83,7 +84,7 @@ public final class NpcManager {
                     final @NonNull Connection connection = databaseManager.getConnection();
                     final @NonNull PreparedStatement saveNpcStatement =
                             connection.prepareStatement(
-                                    "UPDATE npc SET npc_type = ?, npc_skin_id = ?, npc_name = ?, npc_title = ?, " +
+                                    "UPDATE npc SET npc_type = ?, npc_texture_value = ?, npc_texture_signature = ?, npc_name = ?, npc_title = ?, " +
                                             "npc_world = ?, npc_x = ?, npc_y = ?, npc_z = ?, npc_yaw = ?, npc_pitch = ? WHERE id = ?"
                             )
             ) {
@@ -91,15 +92,16 @@ public final class NpcManager {
 
                 saveNpcStatement.setString(1, npc.getType().name());
                 saveNpcStatement.setString(2, npc.getTextureValue());
-                saveNpcStatement.setString(3, npc.getName());
-                saveNpcStatement.setString(4, npc.getTitle());
-                saveNpcStatement.setString(5, npcLocation.getWorld().getName());
-                saveNpcStatement.setDouble(6, npcLocation.getX());
-                saveNpcStatement.setDouble(7, npcLocation.getY());
-                saveNpcStatement.setDouble(8, npcLocation.getZ());
-                saveNpcStatement.setFloat(9, npcLocation.getYaw());
-                saveNpcStatement.setFloat(10, npcLocation.getPitch());
-                saveNpcStatement.setString(11, npc.getId());
+                saveNpcStatement.setString(3, npc.getTextureSignature());
+                saveNpcStatement.setString(4, npc.getName());
+                saveNpcStatement.setString(5, npc.getTitle());
+                saveNpcStatement.setString(6, npcLocation.getWorld().getName());
+                saveNpcStatement.setDouble(7, npcLocation.getX());
+                saveNpcStatement.setDouble(8, npcLocation.getY());
+                saveNpcStatement.setDouble(9, npcLocation.getZ());
+                saveNpcStatement.setFloat(10, npcLocation.getYaw());
+                saveNpcStatement.setFloat(11, npcLocation.getPitch());
+                saveNpcStatement.setString(12, npc.getId());
                 saveNpcStatement.executeUpdate();
                 npc.remove();
             } catch (final @NonNull SQLException e) {
@@ -123,34 +125,36 @@ public final class NpcManager {
             final @NonNull String name,
             final @NonNull Location location
     ) {
-        final @NonNull String skinId = Constants.Skins.SKIN_NPC_DEFAULT;
+        final @NonNull String textureValue = Constants.Skins.NpcDefault.TEXTURE_VALUE;
+        final @NonNull String textureSignature = Constants.Skins.NpcDefault.TEXTURE_SIGNATURE;
         final @NonNull String title = Constants.Text.NPC_TITLE_DEFAULT;
 
         try (
                 final @NonNull Connection connection = databaseManager.getConnection();
                 final @NonNull PreparedStatement insertNpcStatement =
                         connection.prepareStatement(
-                                "INSERT INTO npc (id, npc_type, npc_skin_id, npc_name, npc_title, " +
+                                "INSERT INTO npc (id, npc_type, npc_texture_value, npc_texture_signature, npc_name, npc_title, " +
                                         "npc_world, npc_x, npc_y, npc_z, npc_yaw, npc_pitch) " +
-                                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                                        "VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
                         )
         ) {
             insertNpcStatement.setString(1, id);
             insertNpcStatement.setString(2, type.toString());
-            insertNpcStatement.setString(3, skinId);
-            insertNpcStatement.setString(4, name);
-            insertNpcStatement.setString(5, title);
-            insertNpcStatement.setString(6, location.getWorld().getName());
-            insertNpcStatement.setDouble(7, location.getX());
-            insertNpcStatement.setDouble(8, location.getY());
-            insertNpcStatement.setDouble(9, location.getZ());
-            insertNpcStatement.setFloat(10, location.getYaw());
-            insertNpcStatement.setFloat(11, location.getPitch());
+            insertNpcStatement.setString(3, textureValue);
+            insertNpcStatement.setString(4, textureSignature);
+            insertNpcStatement.setString(5, name);
+            insertNpcStatement.setString(6, title);
+            insertNpcStatement.setString(7, location.getWorld().getName());
+            insertNpcStatement.setDouble(8, location.getX());
+            insertNpcStatement.setDouble(9, location.getY());
+            insertNpcStatement.setDouble(10, location.getZ());
+            insertNpcStatement.setFloat(11, location.getYaw());
+            insertNpcStatement.setFloat(12, location.getPitch());
             insertNpcStatement.executeUpdate();
         } catch (final @NonNull SQLException e) {
             throw new RuntimeException(e);
         }
-        final @NonNull Npc npc = new Npc(id, type, skinId, name, title, location);
+        final @NonNull Npc npc = new Npc(id, type, textureValue, textureSignature, name, title, location);
 
         npcRegistry.registerNpc(npc);
     }
@@ -179,15 +183,19 @@ public final class NpcManager {
     }
 
     /**
-     * Sets the skin id of a {@link Npc}.
+     * Sets the skin of a {@link Npc} skin.
      *
-     * @param id     the id of the Npc
-     * @param skinId the skin id which is to be set
+     * @param id               the id of the Npc
+     * @param textureValue     the texture value which is to be set
+     * @param textureSignature the texture signature which is to be set
      */
-    public void setSkinId(final @NonNull String id, final @NonNull String skinId) {
+    public void setSkin(final @NonNull String id, final @NonNull String textureValue, final @NonNull String textureSignature) {
         final @NonNull Npc npc = npcRegistry.getNpcFromId(id);
 
-        npc.setTextureValue(skinId);
+        npc.remove();
+        npc.setTextureValue(textureValue);
+        npc.setTextureSignature(textureSignature);
+        npc.spawn();
     }
 
     /**
@@ -199,7 +207,9 @@ public final class NpcManager {
     public void setName(final @NonNull String id, final @NonNull String name) {
         final @NonNull Npc npc = npcRegistry.getNpcFromId(id);
 
+        npc.remove();
         npc.setName(name);
+        npc.spawn();
     }
 
     /**
@@ -246,7 +256,8 @@ public final class NpcManager {
                 while (npcsResultSet.next()) {
                     final @NonNull String id = npcsResultSet.getString("id");
                     final @NonNull NpcType type = NpcType.valueOf(npcsResultSet.getString("npc_type"));
-                    final @NonNull String skinId = npcsResultSet.getString("npc_skin_id");
+                    final @NonNull String textureValue = npcsResultSet.getString("npc_texture_value");
+                    final @NonNull String textureSignature = npcsResultSet.getString("npc_texture_signature");
                     final @NonNull String name = npcsResultSet.getString("npc_name");
                     final @NonNull String title = npcsResultSet.getString("npc_title");
 
@@ -259,7 +270,7 @@ public final class NpcManager {
 
                     final @NonNull Location location = new Location(world, x, y, z, yaw, pitch);
 
-                    final @NonNull Npc npc = new Npc(id, type, skinId, name, title, location);
+                    final @NonNull Npc npc = new Npc(id, type, textureValue, textureSignature, name, title, location);
 
                     npcRegistry.registerNpc(npc);
                 }

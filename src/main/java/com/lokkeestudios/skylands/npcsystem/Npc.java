@@ -1,9 +1,12 @@
 package com.lokkeestudios.skylands.npcsystem;
 
+import com.lokkeestudios.skylands.core.utils.Constants;
+import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
+import org.bukkit.util.Consumer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.HashMap;
@@ -16,7 +19,7 @@ import java.util.Map;
  */
 public class Npc {
 
-    public static @NonNull Map<Integer, String> entityPlayers = new HashMap<>();
+    public static @NonNull Map<Integer, Npc> entityPlayers = new HashMap<>();
 
     /**
      * The unique String id of the Npc.
@@ -38,6 +41,11 @@ public class Npc {
     protected @NonNull String textureValue;
 
     /**
+     * The texture signature of the Npc skin.
+     */
+    protected @NonNull String textureSignature;
+
+    /**
      * The name of the Npc.
      */
     protected @NonNull String name;
@@ -55,48 +63,85 @@ public class Npc {
     /**
      * The entity representing the Npc
      */
-    protected @NonNull ArmorStand entityPlayer;
+    protected ArmorStand entityPlayer;
+
+    /**
+     * The entity hologram displaying the player name
+     */
+    protected ArmorStand entityDisplay;
 
     /**
      * Constructs a Npc.
      *
-     * @param id       the unique String id of the Npc
-     * @param type     the {@link NpcType} of the Npc
-     * @param skinId   the skin id of the Npc
-     * @param name     the name of the Npc
-     * @param title    the title of the Npc
-     * @param location the location of the Npc
+     * @param id               the unique String id of the Npc
+     * @param type             the {@link NpcType} of the Npc
+     * @param textureValue     the texture value of the Npc skin
+     * @param textureSignature the texture signature of the Npc skin
+     * @param name             the name of the Npc
+     * @param title            the title of the Npc
+     * @param location         the location of the Npc
      */
     public Npc(
             final @NonNull String id,
             final @NonNull NpcType type,
-            final @NonNull String skinId,
+            final @NonNull String textureValue,
+            final @NonNull String textureSignature,
             final @NonNull String name,
             final @NonNull String title,
             final @NonNull Location location
     ) {
         this.id = id;
         this.type = type;
-        this.textureValue = skinId;
+        this.textureValue = textureValue;
+        this.textureSignature = textureSignature;
         this.name = name;
         this.title = title;
         this.location = location;
 
-        entityPlayer = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
+        spawn();
+    }
+
+    /**
+     * Spawns the {@link ArmorStand} entity representing the Npc player.
+     */
+    public void spawn() {
+        final @NonNull Consumer<ArmorStand> function = armorStand -> entityPlayers.put(armorStand.getEntityId(), this);
+
+        entityPlayer = location.getWorld().spawn(location, ArmorStand.class, false, function);
+
         entityPlayer.setGravity(false);
         entityPlayer.setCanPickupItems(false);
-        entityPlayer.setCustomNameVisible(true);
         entityPlayer.setInvulnerable(true);
-        entityPlayer.customName(MiniMessage.get().parse(name));
+        entityPlayer.setCustomNameVisible(true);
+        entityPlayer.customName(Component.text(title).color(Constants.Text.COLOR_DEFAULT));
 
-        entityPlayers.put(entityPlayer.getEntityId(), id);
+        /*entityPlayer = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
+        entityPlayer.setGravity(false);
+        entityPlayer.setCanPickupItems(false);
+        entityPlayer.setInvulnerable(true);
+        entityPlayer.setCustomNameVisible(true);
+        entityPlayer.customName(MiniMessage.get().parse(title));
+        entityPlayers.put(entityPlayer.getEntityId(), id);*/
+
+        final @NonNull Location displayLocation = location.clone().add(0, 0.1, 0);
+
+        entityDisplay = (ArmorStand) location.getWorld().spawnEntity(displayLocation, EntityType.ARMOR_STAND);
+
+        entityDisplay.setGravity(false);
+        entityDisplay.setCanPickupItems(false);
+        entityDisplay.setInvulnerable(true);
+        entityDisplay.setVisible(false);
+        entityDisplay.setCustomNameVisible(true);
+        entityDisplay.customName(MiniMessage.get().parse(name));
     }
 
     /**
      * Removes the {@link ArmorStand} entity representing the Npc player.
      */
     public void remove() {
+        entityPlayers.remove(entityPlayer.getEntityId());
         entityPlayer.remove();
+        entityDisplay.remove();
     }
 
     /**
@@ -133,6 +178,24 @@ public class Npc {
      */
     public void setTextureValue(final @NonNull String textureValue) {
         this.textureValue = textureValue;
+    }
+
+    /**
+     * Gets the texture signature of the Npc skin.
+     *
+     * @return the Npcs texture signature
+     */
+    public @NonNull String getTextureSignature() {
+        return textureSignature;
+    }
+
+    /**
+     * Sets the texture signature of the Npc skin.
+     *
+     * @param textureSignature the texture signature to be set
+     */
+    public void setTextureSignature(final @NonNull String textureSignature) {
+        this.textureSignature = textureSignature;
     }
 
     /**
@@ -186,7 +249,10 @@ public class Npc {
      * @param location the location to be set
      */
     public void setLocation(final @NonNull Location location) {
+        final @NonNull Location displayLocation = location.clone().add(0, 0.1, 0);
+
         entityPlayer.teleportAsync(location);
+        entityDisplay.teleportAsync(displayLocation);
         this.location = location;
     }
 }

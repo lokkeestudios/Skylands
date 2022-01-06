@@ -375,12 +375,8 @@ public final class NpcGui {
         final @NonNull DecimalFormat decimalFormat = new DecimalFormat();
         decimalFormat.setMaximumFractionDigits(2);
 
-        final @NonNull List<Component> guiItemLore = new ArrayList<>();
-
-        if (!npc.getTitle().equals(" ")) {
-            guiItemLore.add(TextUtil.resetDefaults(MiniMessage.get().parse(npc.getTitle())));
-        }
-        guiItemLore.addAll(Arrays.asList(
+        final @NonNull List<Component> guiItemLore = Arrays.asList(
+                Component.text(npc.getTitle(), Constants.Text.STYLE_DOWNLIGHTED),
                 Component.empty(),
                 Component.text("Type: ", Constants.Text.STYLE_DEFAULT)
                         .append(Component.text(npc.getType().getName(), Constants.Text.STYLE_HIGHLIGHTED)
@@ -398,7 +394,7 @@ public final class NpcGui {
                         ),
                 Component.empty(),
                 Component.text("Click to teleport to Npc!", Constants.Text.STYLE_INFO)
-        ));
+        );
 
         final @NonNull GuiItem guiItem = new GuiItem(ItemBuilder.head()
                 .base64(npc.getTextureValue())

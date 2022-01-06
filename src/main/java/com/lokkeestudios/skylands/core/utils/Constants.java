@@ -13,7 +13,6 @@ import org.bukkit.persistence.PersistentDataContainer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.Base64;
-import java.util.UUID;
 
 /**
  * Stores all sorts of constant values.
@@ -102,7 +101,7 @@ public final class Constants {
         /**
          * The default npc title.
          */
-        public static final @NonNull String NPC_TITLE_DEFAULT = " ";
+        public static final @NonNull String NPC_TITLE_DEFAULT = "Npc";
 
         /**
          * The reset {@link Component}.
@@ -159,13 +158,23 @@ public final class Constants {
     }
 
     /**
-     * Stores constant player skins in form of their {@link UUID}s.
+     * Stores constant player skins in form of their texture values.
      */
     public static final class Skins {
         /**
-         * The {@link UUID} String of the default npc player skin.
+         * The default npc player skin.
          */
-        public static final @NonNull String SKIN_NPC_DEFAULT = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvY2NiZjc4ZWE4ZTE0NGM4NjIxNGU5NTMwNDM2ZWI1MDZlNTM0YTMzZGQzMjZjNDI1MGVmMjc5ZDE5NDI0ZGMxZSJ9fX0=";
+        public static final class NpcDefault {
+            /**
+             * The texture value String of the default npc player skin.
+             */
+            public static final @NonNull String TEXTURE_VALUE = "eyJ0aW1lc3RhbXAiOjE1NjgzNDg5ODc3NDgsInByb2ZpbGVJZCI6IjQ0MDNkYzU0NzViYzRiMTVhNTQ4Y2ZkYTZiMGViN2Q5IiwicHJvZmlsZU5hbWUiOiJHR0dhbWVyc1lUIiwic2lnbmF0dXJlUmVxdWlyZWQiOnRydWUsInRleHR1cmVzIjp7IlNLSU4iOnsidXJsIjoiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9mM2NkZmE3YjBkNThhN2EzNWM3NDhkMTkzYjdlNGJjZjNkNzE3NjgzYjgyZjRiNGFlZDIzMTc4Y2U0OWNjYThiIn19fQ==";
+
+            /**
+             * The texture signature String of the default npc player skin.
+             */
+            public static final @NonNull String TEXTURE_SIGNATURE = "Q6bvo8JiPKr9OrHZHCwtnW6XZ2wtXJXFqqPGoBnrRiu31NbS/qpDljqaoiSh3RgaWQY4MTt5MN1KsuretXq16DZPvwI0tpSsbKDna47NbQ2kH1PDQ1kj4nKf5hCcCW59C4r2+nwF7TUzPbbg7EGGMTu2O4tg9BPlwGz9H/nW8QaWGD7I1UPCRvXwk4MCflhVdNzptEDeKY/IRXkA5xr+AKBpNNXpsVLG11sHcLtgCcI/CZWj08gSzC/+iBqQKR2AkvwpsHD8b4zLn4830RRLu0WQXHzRvRF3LJ7skQS8azYygaKuJ2G5L4g8syv+fvyNP5uuVtkwvLgtBfuEkI6T/K7n6iY6KL0cDf57zDOUHsBCoqeGMv+ANJaQSWDKhB048cAzVC7AVv5wSMx/d2FQAqu8+ZdXJuYKQMSFT5Nx4mmrIwigsUvkrRXwvTkfuwiEcJC31OMjBU5w01WpZCILfxN7hCzBP+DGwyRBz02y309KaulrQ7vbe4rCa2gN9znx+TgTCN0zMDmZLD3+PaPgUsBZbokL8leMcihzK6d+8oPFu/N/GqSd7eOJRMWa9Oje+cyfLoCBbQdbNPEtNASynnDyKOq7oiMwOUuwaAz1qlxrHng5lo9DhMJhUhkfL/zmdSfahRBbPeOndp9mEQWWOArrYTCeJG9/FSZgCGsGy9c=";
+        }
     }
 
     /**

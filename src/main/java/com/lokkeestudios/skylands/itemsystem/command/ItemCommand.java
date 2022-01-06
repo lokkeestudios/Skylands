@@ -9,10 +9,11 @@ import cloud.commandframework.arguments.standard.IntegerArgument;
 import cloud.commandframework.arguments.standard.StringArgument;
 import cloud.commandframework.bukkit.parsers.PlayerArgument;
 import cloud.commandframework.context.CommandContext;
-import com.lokkeestudios.skylands.core.utils.Constants;
-import com.lokkeestudios.skylands.itemsystem.*;
 import com.lokkeestudios.skylands.core.Rarity;
+import com.lokkeestudios.skylands.core.utils.Constants;
+import com.lokkeestudios.skylands.core.utils.TextUtil;
 import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
+import com.lokkeestudios.skylands.itemsystem.*;
 import com.lokkeestudios.skylands.itemsystem.gui.ItemGui;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -316,7 +317,7 @@ public final class ItemCommand {
             ));
             return;
         }
-        player.getInventory().setItemInMainHand(ItemBuilder.from(itemStack).name(name).build());
+        player.getInventory().setItemInMainHand(ItemBuilder.from(itemStack).name(TextUtil.resetDefaults(name)).build());
 
         player.sendMessage(Constants.Text.PREFIX.append(Component
                 .text("Set the name to ", Constants.Text.STYLE_DEFAULT)
