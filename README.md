@@ -1,6 +1,6 @@
 # Skylands
 
-![license](https://img.shields.io/badge/License-MIT-yellow.svg)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **Skylands** is an upcoming open-source System, with all sorts of RPG related functionalities.
 
