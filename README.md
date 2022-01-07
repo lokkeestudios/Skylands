@@ -1,3 +1,8 @@
+
+<div align="center">  
+ <img src="icons/skylands.png" width="300px"/>  
+</div>  
+  
 # Skylands
 
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
