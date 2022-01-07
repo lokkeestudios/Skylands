@@ -68,7 +68,12 @@ public class Npc {
     /**
      * The entity hologram displaying the player name
      */
-    protected ArmorStand entityDisplay;
+    protected ArmorStand entityDisplayName;
+
+    /**
+     * The entity hologram displaying the player title
+     */
+    protected ArmorStand entityDisplayTitle;
 
     /**
      * Constructs a Npc.
@@ -111,28 +116,33 @@ public class Npc {
 
         entityPlayer.setGravity(false);
         entityPlayer.setCanPickupItems(false);
+        entityPlayer.setCollidable(false);
         entityPlayer.setInvulnerable(true);
-        entityPlayer.setCustomNameVisible(true);
-        entityPlayer.customName(Component.text(title).color(Constants.Text.COLOR_DEFAULT));
+        entityPlayer.setCustomNameVisible(false);
 
-        /*entityPlayer = (ArmorStand) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
-        entityPlayer.setGravity(false);
-        entityPlayer.setCanPickupItems(false);
-        entityPlayer.setInvulnerable(true);
-        entityPlayer.setCustomNameVisible(true);
-        entityPlayer.customName(MiniMessage.get().parse(title));
-        entityPlayers.put(entityPlayer.getEntityId(), id);*/
+        final @NonNull Location displayTitleLocation = location.clone().add(0, -0.2, 0);
 
-        final @NonNull Location displayLocation = location.clone().add(0, 0.1, 0);
+        entityDisplayTitle = (ArmorStand) location.getWorld().spawnEntity(displayTitleLocation, EntityType.ARMOR_STAND);
 
-        entityDisplay = (ArmorStand) location.getWorld().spawnEntity(displayLocation, EntityType.ARMOR_STAND);
+        entityDisplayTitle.setGravity(false);
+        entityDisplayTitle.setCanPickupItems(false);
+        entityDisplayTitle.setInvulnerable(true);
+        entityDisplayTitle.setCollidable(false);
+        entityDisplayTitle.setVisible(false);
+        entityDisplayTitle.setCustomNameVisible(true);
+        entityDisplayTitle.customName(Component.text(title).color(Constants.Text.COLOR_DEFAULT));
 
-        entityDisplay.setGravity(false);
-        entityDisplay.setCanPickupItems(false);
-        entityDisplay.setInvulnerable(true);
-        entityDisplay.setVisible(false);
-        entityDisplay.setCustomNameVisible(true);
-        entityDisplay.customName(MiniMessage.get().parse(name));
+        final @NonNull Location displayNameLocation = location.clone().add(0, 0.1, 0);
+
+        entityDisplayName = (ArmorStand) location.getWorld().spawnEntity(displayNameLocation, EntityType.ARMOR_STAND);
+
+        entityDisplayName.setGravity(false);
+        entityDisplayName.setCanPickupItems(false);
+        entityDisplayName.setInvulnerable(true);
+        entityDisplayName.setCollidable(false);
+        entityDisplayName.setVisible(false);
+        entityDisplayName.setCustomNameVisible(true);
+        entityDisplayName.customName(MiniMessage.get().parse(name));
     }
 
     /**
@@ -141,7 +151,8 @@ public class Npc {
     public void remove() {
         entityPlayers.remove(entityPlayer.getEntityId());
         entityPlayer.remove();
-        entityDisplay.remove();
+        entityDisplayTitle.remove();
+        entityDisplayName.remove();
     }
 
     /**
@@ -213,6 +224,7 @@ public class Npc {
      * @param name the name to be set
      */
     public void setName(final @NonNull String name) {
+        this.entityDisplayName.customName(MiniMessage.get().parse(name));
         this.name = name;
     }
 
@@ -231,6 +243,7 @@ public class Npc {
      * @param title the title to be set
      */
     public void setTitle(final @NonNull String title) {
+        this.entityDisplayTitle.customName(Component.text(title).color(Constants.Text.COLOR_DEFAULT));
         this.title = title;
     }
 
@@ -252,7 +265,7 @@ public class Npc {
         final @NonNull Location displayLocation = location.clone().add(0, 0.1, 0);
 
         entityPlayer.teleportAsync(location);
-        entityDisplay.teleportAsync(displayLocation);
+        entityDisplayTitle.teleportAsync(displayLocation);
         this.location = location;
     }
 }

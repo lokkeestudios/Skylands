@@ -207,9 +207,7 @@ public final class NpcManager {
     public void setName(final @NonNull String id, final @NonNull String name) {
         final @NonNull Npc npc = npcRegistry.getNpcFromId(id);
 
-        npc.remove();
         npc.setName(name);
-        npc.spawn();
     }
 
     /**

@@ -6,6 +6,9 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+/**
+ * A {@link ServerLoadEvent} listener, for everything which has to be run onLoad().
+ */
 public class ServerLoadListener implements Listener {
 
     /**

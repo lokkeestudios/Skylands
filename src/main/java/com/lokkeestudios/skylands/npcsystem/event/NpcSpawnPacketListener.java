@@ -5,8 +5,6 @@ import com.github.retrooper.packetevents.event.PacketListener;
 import com.github.retrooper.packetevents.event.impl.PacketSendEvent;
 import com.github.retrooper.packetevents.manager.player.PlayerManager;
 import com.github.retrooper.packetevents.netty.channel.ChannelAbstract;
-import com.github.retrooper.packetevents.protocol.chat.component.BaseComponent;
-import com.github.retrooper.packetevents.protocol.chat.component.serializer.ComponentSerializer;
 import com.github.retrooper.packetevents.protocol.entity.data.provider.EntityDataProvider;
 import com.github.retrooper.packetevents.protocol.entity.data.provider.PlayerDataProvider;
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
@@ -20,17 +18,32 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEn
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfo;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnLivingEntity;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPlayer;
-import com.lokkeestudios.skylands.core.utils.Constants;
+import com.lokkeestudios.skylands.Skylands;
 import com.lokkeestudios.skylands.npcsystem.Npc;
-import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.Collections;
 import java.util.UUID;
 
+/**
+ * A {@link PacketSendEvent} listener, for everything related to spawning {@link Npc}s.
+ */
 public class NpcSpawnPacketListener implements PacketListener {
+
+    /**
+     * The main plugin instance of {@link Skylands}.
+     */
+    final @NonNull Skylands skylands;
+
+    /**
+     * Constructs the {@link NpcSpawnPacketListener}.
+     *
+     * @param skylands the main plugin instance of {@link Skylands}
+     */
+    public NpcSpawnPacketListener(final @NonNull Skylands skylands) {
+        this.skylands = skylands;
+    }
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
@@ -56,24 +69,22 @@ public class NpcSpawnPacketListener implements PacketListener {
         final @NonNull Npc npc = Npc.entityPlayers.get(spawnLivingEntityPacket.getEntityId());
 
         final @NonNull UUID uuid = spawnLivingEntityPacket.getEntityUUID();
+        final @NonNull String name = npc.getName();
 
-        final @NonNull String jsonName = GsonComponentSerializer.gson().serialize(Component.text(npc.getTitle()).color(Constants.Text.COLOR_DEFAULT));
-        final @NonNull BaseComponent baseName = ComponentSerializer.parseJsonComponent(jsonName);
-
-        final @NonNull GameProfile gameProfile = new GameProfile(uuid, MiniMessage.get().stripTokens(npc.getTitle()));
+        final @NonNull GameProfile gameProfile = new GameProfile(uuid, MiniMessage.get().stripTokens(name));
         final @NonNull TextureProperty texture = new TextureProperty("textures", npc.getTextureValue(), npc.getTextureSignature());
         gameProfile.getTextureProperties().add(texture);
 
-        final WrapperPlayServerPlayerInfo.PlayerData playerData = new WrapperPlayServerPlayerInfo.PlayerData(baseName, gameProfile, GameMode.SURVIVAL, 10);
+        final WrapperPlayServerPlayerInfo.PlayerData playerData = new WrapperPlayServerPlayerInfo.PlayerData(null, gameProfile, GameMode.SURVIVAL, 10);
 
         final @NonNull WrapperPlayServerPlayerInfo playerInfoAddPacket = new WrapperPlayServerPlayerInfo(WrapperPlayServerPlayerInfo.Action.ADD_PLAYER, playerData);
 
         final @NonNull Location location = new Location(spawnLivingEntityPacket.getPosition(), spawnLivingEntityPacket.getYaw(), spawnLivingEntityPacket.getPitch());
         final int entityId = spawnLivingEntityPacket.getEntityId();
 
-        final @NonNull WrapperPlayServerSpawnPlayer spawnPlayerPacket = new WrapperPlayServerSpawnPlayer(entityId, uuid, location, Collections.emptyList());
+        final @NonNull WrapperPlayServerSpawnPlayer spawnPlayerPacket = new WrapperPlayServerSpawnPlayer(entityId, uuid, location);
 
-        final @NonNull EntityDataProvider dataProvider = PlayerDataProvider.builderPlayer().skinParts(SkinSection.getAllSections()).build();
+        final @NonNull EntityDataProvider dataProvider = PlayerDataProvider.builderPlayer().skinParts(SkinSection.getAllSections()).customNameVisible(false).build();
 
         final @NonNull WrapperPlayServerEntityMetadata entityMetadataPacket = new WrapperPlayServerEntityMetadata(entityId, dataProvider.encode());
 
@@ -82,5 +93,13 @@ public class NpcSpawnPacketListener implements PacketListener {
         playerManager.sendPacket(channel, playerInfoAddPacket);
         playerManager.sendPacket(channel, spawnPlayerPacket);
         playerManager.sendPacket(channel, entityMetadataPacket);
+
+        new BukkitRunnable() {
+            public void run() {
+                final @NonNull WrapperPlayServerPlayerInfo playerInfoRemovePacket = new WrapperPlayServerPlayerInfo(WrapperPlayServerPlayerInfo.Action.REMOVE_PLAYER, playerData);
+
+                playerManager.sendPacket(channel, playerInfoRemovePacket);
+            }
+        }.runTaskAsynchronously(skylands);
     }
 }

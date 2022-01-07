@@ -19,6 +19,7 @@ import com.lokkeestudios.skylands.npcsystem.NpcManager;
 import com.lokkeestudios.skylands.npcsystem.NpcRegistry;
 import com.lokkeestudios.skylands.npcsystem.command.NpcCommand;
 import com.lokkeestudios.skylands.npcsystem.event.NpcSpawnPacketListener;
+import com.lokkeestudios.skylands.npcsystem.event.PlayerMoveListener;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -129,6 +130,7 @@ public final class Skylands extends JavaPlugin {
         final @NonNull PluginManager pluginManager = Bukkit.getServer().getPluginManager();
 
         pluginManager.registerEvents(new ServerLoadListener(npcManager), this);
+        pluginManager.registerEvents(new PlayerMoveListener(), this);
     }
 
     /**
@@ -137,7 +139,7 @@ public final class Skylands extends JavaPlugin {
     private void registerPacketEvents() {
         final @NonNull EventManager eventManager = PacketEvents.getAPI().getEventManager();
 
-        eventManager.registerListener(new NpcSpawnPacketListener(), PacketListenerPriority.LOW, true);
+        eventManager.registerListener(new NpcSpawnPacketListener(this), PacketListenerPriority.LOW, true);
     }
 
     /**
