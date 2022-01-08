@@ -110,13 +110,12 @@ public class Npc {
      * Spawns the {@link ArmorStand} entity representing the Npc player.
      */
     public void spawn() {
-        final @NonNull Consumer<ArmorStand> function = armorStand -> entityPlayers.put(armorStand.getEntityId(), this);
+        final @NonNull Consumer<ArmorStand> function = entity -> entityPlayers.put(entity.getEntityId(), this);
 
         entityPlayer = location.getWorld().spawn(location, ArmorStand.class, false, function);
 
         entityPlayer.setGravity(false);
         entityPlayer.setCanPickupItems(false);
-        entityPlayer.setCollidable(false);
         entityPlayer.setInvulnerable(true);
         entityPlayer.setCustomNameVisible(false);
 
@@ -127,7 +126,6 @@ public class Npc {
         entityDisplayTitle.setGravity(false);
         entityDisplayTitle.setCanPickupItems(false);
         entityDisplayTitle.setInvulnerable(true);
-        entityDisplayTitle.setCollidable(false);
         entityDisplayTitle.setVisible(false);
         entityDisplayTitle.setCustomNameVisible(true);
         entityDisplayTitle.customName(Component.text(title).color(Constants.Text.COLOR_DEFAULT));
@@ -139,7 +137,6 @@ public class Npc {
         entityDisplayName.setGravity(false);
         entityDisplayName.setCanPickupItems(false);
         entityDisplayName.setInvulnerable(true);
-        entityDisplayName.setCollidable(false);
         entityDisplayName.setVisible(false);
         entityDisplayName.setCustomNameVisible(true);
         entityDisplayName.customName(MiniMessage.get().parse(name));

@@ -12,7 +12,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * @author LOKKEE
  * @version 0.1
  */
-public class ItemBuilder extends BaseItemBuilder<ItemBuilder> {
+public final class ItemBuilder extends BaseItemBuilder<ItemBuilder> {
 
     /**
      * Constructs an {@link ItemBuilder}.
@@ -69,5 +69,25 @@ public class ItemBuilder extends BaseItemBuilder<ItemBuilder> {
      */
     public static @NonNull HeadItemBuilder head(@NonNull final ItemStack itemStack) {
         return new HeadItemBuilder(itemStack);
+    }
+
+    /**
+     * Creates a {@link BookItemBuilder} which has {@link Material#WRITTEN_BOOK} specific methods
+     *
+     * @return the instance of the{@link BookItemBuilder}
+     */
+    public static @NonNull BookItemBuilder book() {
+        return new BookItemBuilder();
+    }
+
+    /**
+     * Creates a {@link BookItemBuilder} which has {@link Material#WRITTEN_BOOK} specific methods
+     *
+     * @param itemStack An existing WRITTEN_BOOK {@link ItemStack}
+     * @return the instance of the{@link HeadItemBuilder}
+     * @throws IllegalArgumentException if the {@link Material} of the ItemStack is not a WRITTEN_BOOK
+     */
+    public static @NonNull BookItemBuilder book(@NonNull final ItemStack itemStack) {
+        return new BookItemBuilder(itemStack);
     }
 }

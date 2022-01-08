@@ -66,7 +66,8 @@ public class NpcSpawnPacketListener implements PacketListener {
      * @param spawnLivingEntityPacket the {@link WrapperPlayServerSpawnLivingEntity} packet for accessing the entity
      */
     private void sendNpcSpawnPackets(final @NonNull ChannelAbstract channel, final @NonNull WrapperPlayServerSpawnLivingEntity spawnLivingEntityPacket) {
-        final @NonNull Npc npc = Npc.entityPlayers.get(spawnLivingEntityPacket.getEntityId());
+        final int entityId = spawnLivingEntityPacket.getEntityId();
+        final @NonNull Npc npc = Npc.entityPlayers.get(entityId);
 
         final @NonNull UUID uuid = spawnLivingEntityPacket.getEntityUUID();
         final @NonNull String name = npc.getName();
@@ -80,7 +81,6 @@ public class NpcSpawnPacketListener implements PacketListener {
         final @NonNull WrapperPlayServerPlayerInfo playerInfoAddPacket = new WrapperPlayServerPlayerInfo(WrapperPlayServerPlayerInfo.Action.ADD_PLAYER, playerData);
 
         final @NonNull Location location = new Location(spawnLivingEntityPacket.getPosition(), spawnLivingEntityPacket.getYaw(), spawnLivingEntityPacket.getPitch());
-        final int entityId = spawnLivingEntityPacket.getEntityId();
 
         final @NonNull WrapperPlayServerSpawnPlayer spawnPlayerPacket = new WrapperPlayServerSpawnPlayer(entityId, uuid, location);
 
@@ -100,6 +100,6 @@ public class NpcSpawnPacketListener implements PacketListener {
 
                 playerManager.sendPacket(channel, playerInfoRemovePacket);
             }
-        }.runTaskAsynchronously(skylands);
+        }.runTaskLaterAsynchronously(skylands, 3L);
     }
 }
