@@ -84,6 +84,17 @@ public final class NpcCommand {
                 .handler(this::processCreateNpc).senderType(Player.class)
         );
 
+        manager.command(builder
+                .literal("movehere", ArgumentDescription.of("Moves a npc to the location of the sender"))
+                .argument(StringArgument
+                        .<CommandSender>newBuilder("id")
+                        .withSuggestionsProvider(this::npcIdSuggestions)
+                        .build()
+                )
+                .permission(Constants.Permissions.ROOT_NPCSYSTEM + ".movehere")
+                .handler(this::processMoveHere).senderType(Player.class)
+        );
+
         final Command.@NonNull Builder<CommandSender> setSubCommand = builder.literal("set");
 
         manager.command(setSubCommand
@@ -121,17 +132,6 @@ public final class NpcCommand {
                 .argument(StringArgument.greedy("title"))
                 .permission(Constants.Permissions.ROOT_NPCSYSTEM + ".set.title")
                 .handler(this::processSetTitle)
-        );
-
-        manager.command(setSubCommand
-                .literal("location", ArgumentDescription.of("Sets the location of a npc"))
-                .argument(StringArgument
-                        .<CommandSender>newBuilder("id")
-                        .withSuggestionsProvider(this::npcIdSuggestions)
-                        .build()
-                )
-                .permission(Constants.Permissions.ROOT_NPCSYSTEM + ".set.location")
-                .handler(this::processSetLocation).senderType(Player.class)
         );
 
         manager.command(builder
@@ -224,11 +224,11 @@ public final class NpcCommand {
     }
 
     /**
-     * Sets the {@link Location} of a {@link Npc}.
+     * Moves a {@link Npc} to the {@link Location} of the {@link CommandSender}.
      *
      * @param context the context of the given command
      */
-    private void processSetLocation(final @NonNull CommandContext<CommandSender> context) {
+    private void processMoveHere(final @NonNull CommandContext<CommandSender> context) {
         final @NonNull Player player = (Player) context.getSender();
 
         final @NonNull String id = context.get("id");

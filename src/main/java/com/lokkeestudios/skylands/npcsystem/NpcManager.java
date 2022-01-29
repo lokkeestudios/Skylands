@@ -154,9 +154,10 @@ public final class NpcManager {
         } catch (final @NonNull SQLException e) {
             throw new RuntimeException(e);
         }
-        final @NonNull Npc npc = new Npc(id, type, textureValue, textureSignature, name, title, location);
+        final @NonNull Npc npc = new Npc(id, type, name, location);
 
         npcRegistry.registerNpc(npc);
+        npc.registerToTeam();
     }
 
     /**

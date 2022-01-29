@@ -26,7 +26,7 @@ repositories {
 
 dependencies {
     paperDevBundle("1.18.1-R0.1-SNAPSHOT")
-    implementation("com.zaxxer:HikariCP:5.0.0")
+    implementation("com.zaxxer:HikariCP:5.0.1")
     implementation("net.kyori:adventure-text-minimessage:4.1.0-SNAPSHOT")
     implementation("cloud.commandframework:cloud-core:1.6.1")
     implementation("cloud.commandframework:cloud-paper:1.6.1")

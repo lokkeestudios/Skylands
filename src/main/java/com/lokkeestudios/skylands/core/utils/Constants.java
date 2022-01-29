@@ -2,6 +2,7 @@ package com.lokkeestudios.skylands.core.utils;
 
 import com.lokkeestudios.skylands.Skylands;
 import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
+import com.lokkeestudios.skylands.npcsystem.Npc;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
@@ -89,6 +90,11 @@ public final class Constants {
         public static final @NonNull Component PREFIX = Component.empty().append(TextUtil.toBoldComponentWithSystemGradient("[Skylands] "));
 
         /**
+         * The reset {@link Component}.
+         */
+        public static final @NonNull Component RESET_DEFAULTS = Component.text().color(TextColor.color(255, 255, 255)).decoration(TextDecoration.ITALIC, false).build();
+
+        /**
          * The UTF symbol for arrow right.
          */
         public static final @NonNull String SYMBOL_ARROW_RIGHT = "→";
@@ -102,11 +108,6 @@ public final class Constants {
          * The default npc title.
          */
         public static final @NonNull String NPC_TITLE_DEFAULT = "Npc";
-
-        /**
-         * The reset {@link Component}.
-         */
-        public static final @NonNull Component RESET_DEFAULTS = Component.text().color(TextColor.color(255, 255, 255)).decoration(TextDecoration.ITALIC, false).build();
     }
 
     /**
@@ -143,6 +144,16 @@ public final class Constants {
     }
 
     /**
+     * Stores constant variables.
+     */
+    public static final class Variables {
+        /**
+         * The distance at which a {@link Npc} starts facing players.
+         */
+        public static final int NPC_DISTANCE_LOOK_CLOSE = 6;
+    }
+
+    /**
      * Stores constant player head {@link Base64} Strings.
      */
     public static final class Heads {
@@ -168,12 +179,12 @@ public final class Constants {
             /**
              * The texture value String of the default npc player skin.
              */
-            public static final @NonNull String TEXTURE_VALUE = "eyJ0aW1lc3RhbXAiOjE1NjgzNDg5ODc3NDgsInByb2ZpbGVJZCI6IjQ0MDNkYzU0NzViYzRiMTVhNTQ4Y2ZkYTZiMGViN2Q5IiwicHJvZmlsZU5hbWUiOiJHR0dhbWVyc1lUIiwic2lnbmF0dXJlUmVxdWlyZWQiOnRydWUsInRleHR1cmVzIjp7IlNLSU4iOnsidXJsIjoiaHR0cDovL3RleHR1cmVzLm1pbmVjcmFmdC5uZXQvdGV4dHVyZS9mM2NkZmE3YjBkNThhN2EzNWM3NDhkMTkzYjdlNGJjZjNkNzE3NjgzYjgyZjRiNGFlZDIzMTc4Y2U0OWNjYThiIn19fQ==";
+            public static final @NonNull String TEXTURE_VALUE = "eyJ0aW1lc3RhbXAiOjE1NjgzNDg5MDEwNjMsInByb2ZpbGVJZCI6ImMxYWYxODI5MDYwZTQ0OGRhNjYwOWRmZGM2OGEzOWE4IiwicHJvZmlsZU5hbWUiOiJCQVJLeDQiLCJzaWduYXR1cmVSZXF1aXJlZCI6dHJ1ZSwidGV4dHVyZXMiOnsiU0tJTiI6eyJ1cmwiOiJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzhhNzMyODFiNDQyMjBlYTI5ZGE3OTBkNDE4ZjY4YWVmMzE2OGQwYzkzYjhhZGFkZjg0NTFlNTk5NzUxMjJlN2YifX19";
 
             /**
              * The texture signature String of the default npc player skin.
              */
-            public static final @NonNull String TEXTURE_SIGNATURE = "Q6bvo8JiPKr9OrHZHCwtnW6XZ2wtXJXFqqPGoBnrRiu31NbS/qpDljqaoiSh3RgaWQY4MTt5MN1KsuretXq16DZPvwI0tpSsbKDna47NbQ2kH1PDQ1kj4nKf5hCcCW59C4r2+nwF7TUzPbbg7EGGMTu2O4tg9BPlwGz9H/nW8QaWGD7I1UPCRvXwk4MCflhVdNzptEDeKY/IRXkA5xr+AKBpNNXpsVLG11sHcLtgCcI/CZWj08gSzC/+iBqQKR2AkvwpsHD8b4zLn4830RRLu0WQXHzRvRF3LJ7skQS8azYygaKuJ2G5L4g8syv+fvyNP5uuVtkwvLgtBfuEkI6T/K7n6iY6KL0cDf57zDOUHsBCoqeGMv+ANJaQSWDKhB048cAzVC7AVv5wSMx/d2FQAqu8+ZdXJuYKQMSFT5Nx4mmrIwigsUvkrRXwvTkfuwiEcJC31OMjBU5w01WpZCILfxN7hCzBP+DGwyRBz02y309KaulrQ7vbe4rCa2gN9znx+TgTCN0zMDmZLD3+PaPgUsBZbokL8leMcihzK6d+8oPFu/N/GqSd7eOJRMWa9Oje+cyfLoCBbQdbNPEtNASynnDyKOq7oiMwOUuwaAz1qlxrHng5lo9DhMJhUhkfL/zmdSfahRBbPeOndp9mEQWWOArrYTCeJG9/FSZgCGsGy9c=";
+            public static final @NonNull String TEXTURE_SIGNATURE = "xdcaPiVlhJJkCshslagshClk3EX/sC52TQGB0yQ2xYdta7ARKuxtnUrx3vQ/IcAy10VCU8gqXkc01RIU01SyszMatkcobuVBIy0f5XLkQmJQ0W5xiOjIciLDJPBdcOkLyu9j9szrrawLPZ3rL9AuIqm5RxjUrh7iARpABUDPZeEkJ6G5b+lLw9HS5va54AERRFKyu5FPtfZU+hQkXFzLx+opmBfRq+ks1eJwPqzx3TJ7CSOCXPxZpk3BZqTfftybB9bsV8Kxgj3itEevpis94Myd/fEdUz2lHKhshXoFH9XObS00Ci60H2V99npU0ck/YtQ3kZGIC4ItWwRKJhpg6w2Sta6eC3XoMByor0kyKp2rQfa9jIc3E4sMWYl+EkXxNJQQR6+y0CBd1TUGYpBkrWlDz/hWN0FskqrGUMTPtvu9DKqbnXKa6fqgKzfrFsbyQXW3e7wIlug+Gkyg1OZRQJpZ+xJzhstt9Sr12LzM+Iglq/pI6qwjR+FICsGdUPVSk3E92/Vr4T/J748dE4t0p6pDC+OzkCaEFWGwY0w3YnDZ0FcB6JNL4E3Zteukj7GAjC2P6uyYbO6It9iBLoHTqLuX/mk11xtas5MeOurSYFJ6XA9DULSF9vpEryefUkjR/Z1c1iAhpD/KW7nlwbfVFJBkTdzMBDw7wobf1KtjgkU=";
         }
     }
 

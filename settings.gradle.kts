@@ -4,5 +4,4 @@ pluginManagement {
         maven("https://papermc.io/repo/repository/maven-public/")
     }
 }
-
 rootProject.name = "Skylands"

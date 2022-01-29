@@ -10,9 +10,9 @@ import com.github.retrooper.packetevents.protocol.entity.data.provider.PlayerDat
 import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
 import com.github.retrooper.packetevents.protocol.player.GameMode;
-import com.github.retrooper.packetevents.protocol.player.GameProfile;
 import com.github.retrooper.packetevents.protocol.player.SkinSection;
 import com.github.retrooper.packetevents.protocol.player.TextureProperty;
+import com.github.retrooper.packetevents.protocol.player.UserProfile;
 import com.github.retrooper.packetevents.protocol.world.Location;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfo;
@@ -20,7 +20,6 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSp
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPlayer;
 import com.lokkeestudios.skylands.Skylands;
 import com.lokkeestudios.skylands.npcsystem.Npc;
-import net.kyori.adventure.text.minimessage.MiniMessage;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -47,16 +46,16 @@ public class NpcSpawnPacketListener implements PacketListener {
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
-        if (event.getPacketType() == PacketType.Play.Server.SPAWN_LIVING_ENTITY) {
-            final @NonNull WrapperPlayServerSpawnLivingEntity spawnLivingEntityPacket = new WrapperPlayServerSpawnLivingEntity(event);
+        if (event.getPacketType() != PacketType.Play.Server.SPAWN_LIVING_ENTITY) return;
 
-            if (!spawnLivingEntityPacket.getEntityType().equals(EntityTypes.ARMOR_STAND)) return;
-            if (!Npc.entityPlayers.containsKey(spawnLivingEntityPacket.getEntityId())) return;
+        final @NonNull WrapperPlayServerSpawnLivingEntity spawnLivingEntityPacket = new WrapperPlayServerSpawnLivingEntity(event);
 
-            event.setCancelled(true);
+        if (!spawnLivingEntityPacket.getEntityType().equals(EntityTypes.ARMOR_STAND)) return;
+        if (!Npc.entities.containsKey(spawnLivingEntityPacket.getEntityId())) return;
 
-            sendNpcSpawnPackets(event.getChannel(), spawnLivingEntityPacket);
-        }
+        event.setCancelled(true);
+
+        sendNpcSpawnPackets(event.getChannel(), spawnLivingEntityPacket);
     }
 
     /**
@@ -67,16 +66,15 @@ public class NpcSpawnPacketListener implements PacketListener {
      */
     private void sendNpcSpawnPackets(final @NonNull ChannelAbstract channel, final @NonNull WrapperPlayServerSpawnLivingEntity spawnLivingEntityPacket) {
         final int entityId = spawnLivingEntityPacket.getEntityId();
-        final @NonNull Npc npc = Npc.entityPlayers.get(entityId);
+        final @NonNull Npc npc = Npc.entities.get(entityId);
 
         final @NonNull UUID uuid = spawnLivingEntityPacket.getEntityUUID();
-        final @NonNull String name = npc.getName();
 
-        final @NonNull GameProfile gameProfile = new GameProfile(uuid, MiniMessage.get().stripTokens(name));
+        final @NonNull UserProfile userProfile = new UserProfile(uuid, Integer.toString(entityId));
         final @NonNull TextureProperty texture = new TextureProperty("textures", npc.getTextureValue(), npc.getTextureSignature());
-        gameProfile.getTextureProperties().add(texture);
+        userProfile.getTextureProperties().add(texture);
 
-        final WrapperPlayServerPlayerInfo.PlayerData playerData = new WrapperPlayServerPlayerInfo.PlayerData(null, gameProfile, GameMode.SURVIVAL, 10);
+        final WrapperPlayServerPlayerInfo.PlayerData playerData = new WrapperPlayServerPlayerInfo.PlayerData(null, userProfile, GameMode.SURVIVAL, 10);
 
         final @NonNull WrapperPlayServerPlayerInfo playerInfoAddPacket = new WrapperPlayServerPlayerInfo(WrapperPlayServerPlayerInfo.Action.ADD_PLAYER, playerData);
 
@@ -84,22 +82,21 @@ public class NpcSpawnPacketListener implements PacketListener {
 
         final @NonNull WrapperPlayServerSpawnPlayer spawnPlayerPacket = new WrapperPlayServerSpawnPlayer(entityId, uuid, location);
 
-        final @NonNull EntityDataProvider dataProvider = PlayerDataProvider.builderPlayer().skinParts(SkinSection.getAllSections()).customNameVisible(false).build();
-
-        final @NonNull WrapperPlayServerEntityMetadata entityMetadataPacket = new WrapperPlayServerEntityMetadata(entityId, dataProvider.encode());
-
         final @NonNull PlayerManager playerManager = PacketEvents.getAPI().getPlayerManager();
 
         playerManager.sendPacket(channel, playerInfoAddPacket);
         playerManager.sendPacket(channel, spawnPlayerPacket);
-        playerManager.sendPacket(channel, entityMetadataPacket);
 
         new BukkitRunnable() {
             public void run() {
                 final @NonNull WrapperPlayServerPlayerInfo playerInfoRemovePacket = new WrapperPlayServerPlayerInfo(WrapperPlayServerPlayerInfo.Action.REMOVE_PLAYER, playerData);
 
+                final @NonNull EntityDataProvider dataProvider = PlayerDataProvider.builderPlayer().skinParts(SkinSection.getAllSections()).build();
+                final @NonNull WrapperPlayServerEntityMetadata entityMetadataPacket = new WrapperPlayServerEntityMetadata(entityId, dataProvider.encode());
+
                 playerManager.sendPacket(channel, playerInfoRemovePacket);
+                playerManager.sendPacket(channel, entityMetadataPacket);
             }
-        }.runTaskLaterAsynchronously(skylands, 3L);
+        }.runTaskLaterAsynchronously(skylands, 10L);
     }
 }
