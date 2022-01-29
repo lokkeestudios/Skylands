@@ -39,9 +39,9 @@ public class NpcLookCloseListener implements Listener {
             final @NonNull Npc npc = Npc.entities.get(entityId);
             final @NonNull Location npcLocation = npc.getLocation();
 
-            if (npcLocation.getWorld() != playerLocation.getWorld()) return;
+            if (npcLocation.getWorld() != playerLocation.getWorld()) continue;
 
-            if (npcLocation.distance(playerLocation) > Constants.Variables.NPC_DISTANCE_LOOK_CLOSE) return;
+            if (npcLocation.distance(playerLocation) > Constants.Variables.NPC_DISTANCE_LOOK_CLOSE) continue;
 
             new BukkitRunnable() {
                 public void run() {
