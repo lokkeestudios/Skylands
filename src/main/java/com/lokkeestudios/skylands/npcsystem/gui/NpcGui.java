@@ -12,6 +12,7 @@ import com.github.stefvanschie.inventoryframework.pane.util.Mask;
 import com.lokkeestudios.skylands.core.utils.Constants;
 import com.lokkeestudios.skylands.core.utils.TextUtil;
 import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
+import com.lokkeestudios.skylands.core.utils.itembuilder.SkullItemBuilder;
 import com.lokkeestudios.skylands.itemsystem.Item;
 import com.lokkeestudios.skylands.npcsystem.Npc;
 import com.lokkeestudios.skylands.npcsystem.NpcFilter;
@@ -150,7 +151,7 @@ public final class NpcGui {
 
         final @NonNull StaticPane infoPane = new StaticPane(4, 0, 1, 1, Pane.Priority.HIGHEST);
 
-        final @NonNull ItemStack infoItem = ItemBuilder.from(Material.OAK_SIGN)
+        final @NonNull ItemStack infoItem = ItemBuilder.of(Material.OAK_SIGN)
                 .name(TextUtil.toComponentWithSystemGradient("Npcs Menu"))
                 .lore(
                         Component.text("A database of every single existing npc.", Constants.Text.STYLE_DEFAULT),
@@ -165,7 +166,7 @@ public final class NpcGui {
 
         final @NonNull StaticPane closePane = new StaticPane(4, 5, 1, 1, Pane.Priority.HIGHEST);
 
-        final @NonNull ItemStack closeItem = ItemBuilder.from(Material.BARRIER)
+        final @NonNull ItemStack closeItem = ItemBuilder.of(Material.BARRIER)
                 .name(Component.text("Close", Constants.Text.STYLE_ALERT))
                 .build();
 
@@ -176,16 +177,16 @@ public final class NpcGui {
         final @NonNull StaticPane previousPane = new StaticPane(0, 5, 1, 1, Pane.Priority.HIGHEST);
         final @NonNull StaticPane nextPane = new StaticPane(8, 5, 1, 1, Pane.Priority.HIGHEST);
 
-        final @NonNull ItemStack previousItem = ItemBuilder.head()
-                .base64(Constants.Heads.BASE64_ARROW_LEFT)
+        final @NonNull ItemStack previousItem = SkullItemBuilder.of()
+                .textures(Constants.Textures.ArrowLeft.TEXTURE_VALUE)
                 .name(Component.text(
                         Constants.Text.SYMBOL_ARROW_LEFT + " Previous Page", Constants.Text.STYLE_HIGHLIGHTED
                 ))
                 .build();
         updateNavigationDisplay(previousItem, 0, npcsPane.getPages());
 
-        final @NonNull ItemStack nextItem = ItemBuilder.head()
-                .base64(Constants.Heads.BASE64_ARROW_RIGHT)
+        final @NonNull ItemStack nextItem = SkullItemBuilder.of()
+                .textures(Constants.Textures.ArrowRight.TEXTURE_VALUE)
                 .name(Component.text(
                         "Next Page " + Constants.Text.SYMBOL_ARROW_RIGHT, Constants.Text.STYLE_HIGHLIGHTED
                 ))
@@ -248,7 +249,7 @@ public final class NpcGui {
         }
 
         final @NonNull ItemStack searchFilterItem = ItemBuilder
-                .from(Material.WRITABLE_BOOK)
+                .of(Material.WRITABLE_BOOK)
                 .name(Component.text("Search", Constants.Text.STYLE_HIGHLIGHTED))
                 .lore(searchFilterLore)
                 .build();
@@ -266,7 +267,7 @@ public final class NpcGui {
         final @NonNull List<Component> sortFilterLore = getFilterItemLore(sortFilter, SortFilter.values());
 
         final @NonNull ItemStack sortFilterItem = ItemBuilder
-                .from(Material.HOPPER)
+                .of(Material.HOPPER)
                 .name(Component.text("Sort", Constants.Text.STYLE_HIGHLIGHTED))
                 .lore(sortFilterLore)
                 .build();
@@ -280,7 +281,7 @@ public final class NpcGui {
         final @NonNull List<Component> typeFilterLore = getFilterItemLore(typeFilter, NpcType.values());
 
         final @NonNull ItemStack typeFilterItem = ItemBuilder
-                .from(Material.ARMOR_STAND)
+                .of(Material.ARMOR_STAND)
                 .name(Component.text("Type", Constants.Text.STYLE_HIGHLIGHTED))
                 .lore(typeFilterLore)
                 .build();
@@ -305,13 +306,13 @@ public final class NpcGui {
         final @NonNull AnvilGui searchGui = new AnvilGui(title);
         searchGui.setOnGlobalClick(event -> event.setCancelled(true));
 
-        final @NonNull ItemStack backItem = ItemBuilder.head()
-                .base64(Constants.Heads.BASE64_ARROW_LEFT)
+        final @NonNull ItemStack backItem = SkullItemBuilder.of()
+                .textures(Constants.Textures.ArrowLeft.TEXTURE_VALUE)
                 .name(Component.text("Go Back", Constants.Text.STYLE_ALERT))
                 .build();
 
         final @NonNull ItemStack confirmItem = ItemBuilder
-                .from(Material.LIME_STAINED_GLASS_PANE)
+                .of(Material.LIME_STAINED_GLASS_PANE)
                 .name(Component.text("Confirm Search", Constants.Text.STYLE_SUCCESS))
                 .build();
 
@@ -396,9 +397,9 @@ public final class NpcGui {
                 Component.text("Click to teleport to Npc!", Constants.Text.STYLE_INFO)
         );
 
-        final @NonNull GuiItem guiItem = new GuiItem(ItemBuilder.head()
-                .base64(npc.getTextureValue())
-                .name(TextUtil.resetDefaults(MiniMessage.get().parse(npc.getName())))
+        final @NonNull GuiItem guiItem = new GuiItem(SkullItemBuilder.of()
+                .textures(npc.getTextureValue())
+                .name(MiniMessage.get().parse(npc.getName()))
                 .lore(guiItemLore)
                 .build(), event -> {
             final @NonNull Player player = (Player) event.getWhoClicked();

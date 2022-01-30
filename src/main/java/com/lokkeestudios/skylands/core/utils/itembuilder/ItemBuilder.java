@@ -1,28 +1,40 @@
 package com.lokkeestudios.skylands.core.utils.itembuilder;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import java.util.Objects;
 
 /**
- * The main ItemBuilder.
+ * The main item builder.
+ * <p>
+ * Modifies {@link ItemStack}s that have an ItemMeta type of {@link ItemMeta}.
  * <p>
  * Extends the {@link BaseItemBuilder}.
  *
  * @author LOKKEE
- * @version 0.1
+ * @version 1.0
  */
-public final class ItemBuilder extends BaseItemBuilder<ItemBuilder> {
+public final class ItemBuilder extends BaseItemBuilder<ItemBuilder, ItemMeta> {
 
     /**
      * Constructs an {@link ItemBuilder}.
      *
      * @param itemStack the {@link ItemStack} of the ItemBuilder
+     * @param itemMeta  the {@link ItemMeta} of the ItemBuilder
      */
-    public ItemBuilder(
-            final @NonNull ItemStack itemStack
+    private ItemBuilder(
+            final @NonNull ItemStack itemStack,
+            final @Nullable ItemMeta itemMeta
     ) {
-        super(itemStack);
+        super(itemStack, itemMeta != null
+                ? itemMeta
+                : Objects.requireNonNull(Bukkit.getItemFactory().getItemMeta(itemStack.getType()))
+        );
     }
 
     /**
@@ -31,10 +43,10 @@ public final class ItemBuilder extends BaseItemBuilder<ItemBuilder> {
      * @param itemStack the {@link ItemStack} to base the builder off of
      * @return the instance of the ItemBuilder
      */
-    public static @NonNull ItemBuilder from(
+    public static @NonNull ItemBuilder of(
             final @NonNull ItemStack itemStack
     ) {
-        return new ItemBuilder(itemStack);
+        return new ItemBuilder(itemStack, itemStack.getItemMeta());
     }
 
     /**
@@ -45,49 +57,9 @@ public final class ItemBuilder extends BaseItemBuilder<ItemBuilder> {
      * @param material the {@link Material} to base the builder off of
      * @return the instance of the ItemBuilder
      */
-    public static @NonNull ItemBuilder from(
+    public static @NonNull ItemBuilder of(
             final @NonNull Material material
-    ) {
-        return ItemBuilder.from(new ItemStack(material));
-    }
-
-    /**
-     * Creates a {@link HeadItemBuilder} which has {@link Material#PLAYER_HEAD} specific methods
-     *
-     * @return the instance of the{@link HeadItemBuilder}
-     */
-    public static @NonNull HeadItemBuilder head() {
-        return new HeadItemBuilder();
-    }
-
-    /**
-     * Creates a {@link HeadItemBuilder} which has {@link Material#PLAYER_HEAD} specific methods
-     *
-     * @param itemStack An existing PLAYER_HEAD {@link ItemStack}
-     * @return the instance of the{@link HeadItemBuilder}
-     * @throws IllegalArgumentException if the {@link Material} of the ItemStack is not a PLAYER_HEAD
-     */
-    public static @NonNull HeadItemBuilder head(@NonNull final ItemStack itemStack) {
-        return new HeadItemBuilder(itemStack);
-    }
-
-    /**
-     * Creates a {@link BookItemBuilder} which has {@link Material#WRITTEN_BOOK} specific methods
-     *
-     * @return the instance of the{@link BookItemBuilder}
-     */
-    public static @NonNull BookItemBuilder book() {
-        return new BookItemBuilder();
-    }
-
-    /**
-     * Creates a {@link BookItemBuilder} which has {@link Material#WRITTEN_BOOK} specific methods
-     *
-     * @param itemStack An existing WRITTEN_BOOK {@link ItemStack}
-     * @return the instance of the{@link HeadItemBuilder}
-     * @throws IllegalArgumentException if the {@link Material} of the ItemStack is not a WRITTEN_BOOK
-     */
-    public static @NonNull BookItemBuilder book(@NonNull final ItemStack itemStack) {
-        return new BookItemBuilder(itemStack);
+    ) throws IllegalArgumentException {
+        return ItemBuilder.of(getItem(material));
     }
 }

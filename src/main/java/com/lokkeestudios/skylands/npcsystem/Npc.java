@@ -3,23 +3,21 @@ package com.lokkeestudios.skylands.npcsystem;
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.manager.player.PlayerManager;
 import com.github.retrooper.packetevents.netty.channel.ChannelAbstract;
+import com.github.retrooper.packetevents.protocol.player.GameMode;
+import com.github.retrooper.packetevents.protocol.player.TextureProperty;
+import com.github.retrooper.packetevents.protocol.player.UserProfile;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityHeadLook;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityRotation;
-import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfo;
 import com.lokkeestudios.skylands.core.utils.Constants;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.MiniMessage;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.util.Consumer;
 import org.checkerframework.checker.nullness.qual.NonNull;
-
-import java.util.*;
 
 /**
  * The base npc with all common fields and methods.
@@ -27,25 +25,6 @@ import java.util.*;
  * The heart and the core of the entire NpcSystem
  */
 public class Npc {
-
-    /**
-     * The String name of the npc team.
-     */
-    public static String teamName = UUID.randomUUID().toString();
-
-    /**
-     * The {@link WrapperPlayServerTeams.ScoreBoardTeamInfo} of the npc team.
-     */
-    public static WrapperPlayServerTeams.ScoreBoardTeamInfo teamInfo = new WrapperPlayServerTeams.ScoreBoardTeamInfo(Component.empty(), null, null, WrapperPlayServerTeams.NameTagVisibility.NEVER, WrapperPlayServerTeams.CollisionRule.NEVER, NamedTextColor.WHITE, WrapperPlayServerTeams.OptionData.NONE);
-
-    /**
-     * A registry of every {@link Npc} entity
-     * <p>
-     * Key - the entity id
-     * <p>
-     * Value - the corresponding Npc instance
-     */
-    public static @NonNull Map<Integer, Npc> entities = new HashMap<>();
 
     /**
      * The unique String id of the Npc.
@@ -82,27 +61,27 @@ public class Npc {
     protected @NonNull String title;
 
     /**
-     * The location of the Npc.
+     * The {@link Location} of the Npc.
      */
     protected @NonNull Location location;
 
     /**
-     * The id of the Npc entity.
+     * The {@link WrapperPlayServerPlayerInfo.PlayerData} of the Npc.
      */
-    protected int entityId;
+    protected WrapperPlayServerPlayerInfo.PlayerData playerData;
 
     /**
-     * The entity representing the Npc
+     * The {@link LivingEntity} representing the Npc
      */
     protected LivingEntity entity;
 
     /**
-     * The entity hologram displaying the player name
+     * The {@link ArmorStand} hologram displaying the player name
      */
     protected ArmorStand entityDisplayName;
 
     /**
-     * The entity hologram displaying the player title
+     * The {@link ArmorStand} hologram displaying the player title
      */
     protected ArmorStand entityDisplayTitle;
 
@@ -125,11 +104,9 @@ public class Npc {
         this.name = name;
         this.location = location;
 
-        this.textureValue = Constants.Skins.NpcDefault.TEXTURE_VALUE;
-        this.textureSignature = Constants.Skins.NpcDefault.TEXTURE_SIGNATURE;
+        this.textureValue = Constants.Textures.NpcDefault.TEXTURE_VALUE;
+        this.textureSignature = Constants.Textures.NpcDefault.TEXTURE_SIGNATURE;
         this.title = Constants.Text.NPC_TITLE_DEFAULT;
-
-        spawn();
     }
 
     /**
@@ -159,53 +136,58 @@ public class Npc {
         this.name = name;
         this.title = title;
         this.location = location;
-
-        spawn();
     }
 
     /**
      * Spawns the {@link ArmorStand} entity representing the Npc player.
      */
     public void spawn() {
-        final @NonNull Consumer<ArmorStand> function = entity -> {
-            this.entityId = entity.getEntityId();
-            entities.put(entityId, this);
-        };
+        this.entity = (LivingEntity) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
 
-        entity = location.getWorld().spawn(location, ArmorStand.class, false, function);
-
-        entity.setGravity(false);
-        entity.setCanPickupItems(false);
-        entity.setCustomNameVisible(false);
+        this.entity.setGravity(false);
+        this.entity.setCanPickupItems(false);
+        this.entity.setCustomNameVisible(false);
 
         final @NonNull Location displayTitleLocation = new Location(location.getWorld(), location.getX(), (location.getY() - 0.2), location.getZ());
 
-        entityDisplayTitle = (ArmorStand) location.getWorld().spawnEntity(displayTitleLocation, EntityType.ARMOR_STAND);
+        this.entityDisplayTitle = (ArmorStand) location.getWorld().spawnEntity(displayTitleLocation, EntityType.ARMOR_STAND);
 
-        entityDisplayTitle.setGravity(false);
-        entityDisplayTitle.setCanPickupItems(false);
-        entityDisplayTitle.setInvulnerable(true);
-        entityDisplayTitle.setVisible(false);
-        entityDisplayTitle.setCustomNameVisible(true);
-        entityDisplayTitle.customName(Component.text(title).color(Constants.Text.COLOR_DEFAULT));
+        this.entityDisplayTitle.setGravity(false);
+        this.entityDisplayTitle.setCanPickupItems(false);
+        this.entityDisplayTitle.setInvulnerable(true);
+        this.entityDisplayTitle.setVisible(false);
+        this.entityDisplayTitle.setCustomNameVisible(true);
+        this.entityDisplayTitle.customName(Component.text(title).color(Constants.Text.COLOR_DEFAULT));
 
         final @NonNull Location displayNameLocation = new Location(location.getWorld(), location.getX(), (location.getY() + 0.1), location.getZ());
 
-        entityDisplayName = (ArmorStand) location.getWorld().spawnEntity(displayNameLocation, EntityType.ARMOR_STAND);
+        this.entityDisplayName = (ArmorStand) location.getWorld().spawnEntity(displayNameLocation, EntityType.ARMOR_STAND);
 
-        entityDisplayName.setGravity(false);
-        entityDisplayName.setCanPickupItems(false);
-        entityDisplayName.setInvulnerable(true);
-        entityDisplayName.setVisible(false);
-        entityDisplayName.setCustomNameVisible(true);
-        entityDisplayName.customName(MiniMessage.get().parse(name));
+        this.entityDisplayName.setGravity(false);
+        this.entityDisplayName.setCanPickupItems(false);
+        this.entityDisplayName.setInvulnerable(true);
+        this.entityDisplayName.setVisible(false);
+        this.entityDisplayName.setCustomNameVisible(true);
+        this.entityDisplayName.customName(MiniMessage.get().parse(name));
+
+        setupPlayerData();
+    }
+
+    /**
+     * Sets up the {@link WrapperPlayServerPlayerInfo.PlayerData} of the Npc.
+     */
+    protected void setupPlayerData() {
+        final @NonNull UserProfile userProfile = new UserProfile(entity.getUniqueId(), Integer.toString(entity.getEntityId()));
+        final @NonNull TextureProperty texture = new TextureProperty("textures", textureValue, textureSignature);
+        userProfile.getTextureProperties().add(texture);
+
+        this.playerData = new WrapperPlayServerPlayerInfo.PlayerData(null, userProfile, GameMode.SURVIVAL, 1);
     }
 
     /**
      * Removes the {@link ArmorStand} entity representing the Npc player.
      */
     public void remove() {
-        entities.remove(entityId);
         entity.remove();
         entityDisplayTitle.remove();
         entityDisplayName.remove();
@@ -225,29 +207,14 @@ public class Npc {
         final byte yaw = (byte) ((npcLocation.getYaw() % 360) * 256 / 360);
         final byte pitch = (byte) ((npcLocation.getPitch() % 360) * 256 / 360);
 
-        final @NonNull WrapperPlayServerEntityHeadLook headLookPacket = new WrapperPlayServerEntityHeadLook(entityId, yaw);
-        final @NonNull WrapperPlayServerEntityRotation rotationPacket = new WrapperPlayServerEntityRotation(entityId, yaw, pitch, true);
+        final @NonNull WrapperPlayServerEntityHeadLook headLookPacket = new WrapperPlayServerEntityHeadLook(entity.getEntityId(), yaw);
+        final @NonNull WrapperPlayServerEntityRotation rotationPacket = new WrapperPlayServerEntityRotation(entity.getEntityId(), yaw, pitch, true);
 
         final @NonNull PlayerManager playerManager = PacketEvents.getAPI().getPlayerManager();
         final @NonNull ChannelAbstract channel = playerManager.getChannel(player);
 
         playerManager.sendPacket(channel, headLookPacket);
         playerManager.sendPacket(channel, rotationPacket);
-    }
-
-    /**
-     * Registers the Npc to the team.
-     */
-    public void registerToTeam() {
-        final @NonNull WrapperPlayServerTeams teamsPacket = new WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.ADD_ENTITIES, Optional.of(teamInfo), Collections.singletonList(Integer.toString(entityId)));
-
-        final @NonNull PlayerManager playerManager = PacketEvents.getAPI().getPlayerManager();
-
-        for (final Player player : Bukkit.getOnlinePlayers()) {
-            final @NonNull ChannelAbstract channel = playerManager.getChannel(player);
-
-            playerManager.sendPacket(channel, teamsPacket);
-        }
     }
 
     /**
@@ -357,11 +324,31 @@ public class Npc {
      * @param location the location to be set
      */
     public void setLocation(final @NonNull Location location) {
-        final @NonNull Location displayLocation = location.clone().add(0, 0.1, 0);
+        final @NonNull Location displayTitleLocation = new Location(location.getWorld(), location.getX(), (location.getY() - 0.2), location.getZ());
+        final @NonNull Location displayNameLocation = new Location(location.getWorld(), location.getX(), (location.getY() + 0.1), location.getZ());
 
         entity.teleportAsync(location);
-        entityDisplayName.teleportAsync(displayLocation);
-        entityDisplayTitle.teleportAsync(displayLocation);
+        entityDisplayTitle.teleportAsync(displayTitleLocation);
+        entityDisplayName.teleportAsync(displayNameLocation);
+
         this.location = location;
+    }
+
+    /**
+     * Gets the {@link LivingEntity} representing the Npc.
+     *
+     * @return the entity representing the Npc
+     */
+    public LivingEntity getEntity() {
+        return entity;
+    }
+
+    /**
+     * Gets the {@link WrapperPlayServerPlayerInfo.PlayerData} of the Npc.
+     *
+     * @return the Npcs player data
+     */
+    public WrapperPlayServerPlayerInfo.PlayerData getPlayerData() {
+        return playerData;
     }
 }

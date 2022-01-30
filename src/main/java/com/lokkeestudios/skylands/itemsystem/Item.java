@@ -79,7 +79,7 @@ public class Item {
      * Gets the final build {@link ItemStack} with all the data and styles.
      */
     public final @NonNull ItemStack getBuildItemStack() {
-        final @NonNull ItemBuilder item = ItemBuilder.from(itemStack);
+        final @NonNull ItemBuilder item = ItemBuilder.of(itemStack);
 
         item.name(rarity.applyColor(Objects.requireNonNull(itemStack.getItemMeta().displayName())));
 
@@ -118,8 +118,7 @@ public class Item {
 
         item.lore(lore);
 
-        item.unbreakable(true);
-        item.flags(ItemFlag.values());
+        item.unbreakable(true).flags(ItemFlag.values());
 
         item.data(Constants.NamespacedKeys.KEY_ID, PersistentDataType.STRING, id);
         item.data(Constants.NamespacedKeys.KEY_TYPE, PersistentDataType.STRING, type.name());
@@ -192,7 +191,7 @@ public class Item {
     }
 
     /**
-     * Gets the value of an specific {@link ItemStat}.
+     * Gets the value of a specific {@link ItemStat}.
      *
      * @param stat the stat of which the value is wanted
      * @return the value of the specified ItemStat

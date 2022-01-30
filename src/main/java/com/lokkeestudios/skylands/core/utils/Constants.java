@@ -13,8 +13,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
-import java.util.Base64;
-
 /**
  * Stores all sorts of constant values.
  *
@@ -138,7 +136,7 @@ public final class Constants {
          * The menu background {@link ItemStack}.
          */
         public static final @NonNull ItemStack MENU_BACKGROUND = ItemBuilder
-                .from(Material.PURPLE_STAINED_GLASS_PANE)
+                .of(Material.PURPLE_STAINED_GLASS_PANE)
                 .name(Component.empty())
                 .build();
     }
@@ -154,35 +152,41 @@ public final class Constants {
     }
 
     /**
-     * Stores constant player head {@link Base64} Strings.
+     * Stores constant player textures in form of their texture values and signatures.
      */
-    public static final class Heads {
-        /**
-         * The {@link Base64} String of the arrow right player head.
-         */
-        public static final @NonNull String BASE64_ARROW_RIGHT = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTliZjMyOTJlMTI2YTEwNWI1NGViYTcxM2FhMWIxNTJkNTQxYTFkODkzODgyOWM1NjM2NGQxNzhlZDIyYmYifX19";
+    public static final class Textures {
 
         /**
-         * The {@link Base64} String of the arrow left player head.
+         * The left arrow player head texture.
          */
-        public static final @NonNull String BASE64_ARROW_LEFT = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMTA2M2YyNTUzYjJmYTk0NWVlMWQ0ZDcxNTJmZGM1NDI1YmMxMmE5In19fQ==";
-    }
+        public static final class ArrowLeft {
+            /**
+             * The texture value String of the left arrow player head texture.
+             */
+            public static final @NonNull String TEXTURE_VALUE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvYmQ2OWUwNmU1ZGFkZmQ4NGU1ZjNkMWMyMTA2M2YyNTUzYjJmYTk0NWVlMWQ0ZDcxNTJmZGM1NDI1YmMxMmE5In19fQ==";
+        }
 
-    /**
-     * Stores constant player skins in form of their texture values.
-     */
-    public static final class Skins {
         /**
-         * The default npc player skin.
+         * The right arrow player head texture.
+         */
+        public static final class ArrowRight {
+            /**
+             * The texture value String of the right arrow player head texture.
+             */
+            public static final @NonNull String TEXTURE_VALUE = "eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMTliZjMyOTJlMTI2YTEwNWI1NGViYTcxM2FhMWIxNTJkNTQxYTFkODkzODgyOWM1NjM2NGQxNzhlZDIyYmYifX19";
+        }
+
+        /**
+         * The default npc player texture.
          */
         public static final class NpcDefault {
             /**
-             * The texture value String of the default npc player skin.
+             * The texture value String of the default npc player texture.
              */
             public static final @NonNull String TEXTURE_VALUE = "eyJ0aW1lc3RhbXAiOjE1NjgzNDg5MDEwNjMsInByb2ZpbGVJZCI6ImMxYWYxODI5MDYwZTQ0OGRhNjYwOWRmZGM2OGEzOWE4IiwicHJvZmlsZU5hbWUiOiJCQVJLeDQiLCJzaWduYXR1cmVSZXF1aXJlZCI6dHJ1ZSwidGV4dHVyZXMiOnsiU0tJTiI6eyJ1cmwiOiJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzhhNzMyODFiNDQyMjBlYTI5ZGE3OTBkNDE4ZjY4YWVmMzE2OGQwYzkzYjhhZGFkZjg0NTFlNTk5NzUxMjJlN2YifX19";
 
             /**
-             * The texture signature String of the default npc player skin.
+             * The texture signature String of the default npc player texture.
              */
             public static final @NonNull String TEXTURE_SIGNATURE = "xdcaPiVlhJJkCshslagshClk3EX/sC52TQGB0yQ2xYdta7ARKuxtnUrx3vQ/IcAy10VCU8gqXkc01RIU01SyszMatkcobuVBIy0f5XLkQmJQ0W5xiOjIciLDJPBdcOkLyu9j9szrrawLPZ3rL9AuIqm5RxjUrh7iARpABUDPZeEkJ6G5b+lLw9HS5va54AERRFKyu5FPtfZU+hQkXFzLx+opmBfRq+ks1eJwPqzx3TJ7CSOCXPxZpk3BZqTfftybB9bsV8Kxgj3itEevpis94Myd/fEdUz2lHKhshXoFH9XObS00Ci60H2V99npU0ck/YtQ3kZGIC4ItWwRKJhpg6w2Sta6eC3XoMByor0kyKp2rQfa9jIc3E4sMWYl+EkXxNJQQR6+y0CBd1TUGYpBkrWlDz/hWN0FskqrGUMTPtvu9DKqbnXKa6fqgKzfrFsbyQXW3e7wIlug+Gkyg1OZRQJpZ+xJzhstt9Sr12LzM+Iglq/pI6qwjR+FICsGdUPVSk3E92/Vr4T/J748dE4t0p6pDC+OzkCaEFWGwY0w3YnDZ0FcB6JNL4E3Zteukj7GAjC2P6uyYbO6It9iBLoHTqLuX/mk11xtas5MeOurSYFJ6XA9DULSF9vpEryefUkjR/Z1c1iAhpD/KW7nlwbfVFJBkTdzMBDw7wobf1KtjgkU=";
         }

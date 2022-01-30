@@ -3,6 +3,7 @@ package com.lokkeestudios.skylands.npcsystem.event;
 import com.lokkeestudios.skylands.Skylands;
 import com.lokkeestudios.skylands.core.utils.Constants;
 import com.lokkeestudios.skylands.npcsystem.Npc;
+import com.lokkeestudios.skylands.npcsystem.NpcRegistry;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -22,12 +23,22 @@ public class NpcLookCloseListener implements Listener {
     final @NonNull Skylands skylands;
 
     /**
+     * The main {@link NpcRegistry} instance.
+     */
+    private final @NonNull NpcRegistry npcRegistry;
+
+    /**
      * Constructs the {@link NpcLookCloseListener}.
      *
-     * @param skylands the main plugin instance of {@link Skylands}
+     * @param skylands    the main plugin instance of {@link Skylands}
+     * @param npcRegistry the main {@link NpcRegistry} instance
      */
-    public NpcLookCloseListener(final @NonNull Skylands skylands) {
+    public NpcLookCloseListener(
+            final @NonNull Skylands skylands,
+            final @NonNull NpcRegistry npcRegistry
+    ) {
         this.skylands = skylands;
+        this.npcRegistry = npcRegistry;
     }
 
     @EventHandler
@@ -35,8 +46,7 @@ public class NpcLookCloseListener implements Listener {
         final @NonNull Player player = event.getPlayer();
         final @NonNull Location playerLocation = player.getLocation();
 
-        for (final int entityId : Npc.entities.keySet()) {
-            final @NonNull Npc npc = Npc.entities.get(entityId);
+        for (final @NonNull Npc npc : npcRegistry.getNpcs()) {
             final @NonNull Location npcLocation = npc.getLocation();
 
             if (npcLocation.getWorld() != playerLocation.getWorld()) continue;

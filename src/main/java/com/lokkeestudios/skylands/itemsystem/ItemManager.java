@@ -93,7 +93,7 @@ public final class ItemManager {
             ) {
                 saveItemStatement.setString(1, item.getType().toString());
                 saveItemStatement.setString(2, item.getRarity().toString());
-                saveItemStatement.setString(3, ItemSerializer.ItemStackToBase64(item.getItemStack()));
+                saveItemStatement.setString(3, ItemSerializer.itemStackToBase64(item.getItemStack()));
                 saveItemStatement.setString(4, item.getId());
                 saveItemStatement.executeUpdate();
 
@@ -141,7 +141,7 @@ public final class ItemManager {
             insertItemStatement.setString(1, id);
             insertItemStatement.setString(2, type.toString());
             insertItemStatement.setString(3, rarity.toString());
-            insertItemStatement.setString(4, ItemSerializer.ItemStackToBase64(itemStack));
+            insertItemStatement.setString(4, ItemSerializer.itemStackToBase64(itemStack));
             insertItemStatement.executeUpdate();
         } catch (final @NonNull SQLException e) {
             throw new RuntimeException(e);
@@ -269,7 +269,7 @@ public final class ItemManager {
                     final @NonNull String id = itemsResultSet.getString("id");
                     final @NonNull ItemType type = ItemType.valueOf(itemsResultSet.getString("item_type"));
                     final @NonNull Rarity rarity = Rarity.valueOf(itemsResultSet.getString("item_rarity"));
-                    final @NonNull ItemStack itemStack = ItemSerializer.ItemStackFromBase64(itemsResultSet.getString("item_item_stack"));
+                    final @NonNull ItemStack itemStack = ItemSerializer.itemStackFromBase64(itemsResultSet.getString("item_item_stack"));
 
                     final @NonNull Item item = new Item(id, type, rarity, itemStack);
 

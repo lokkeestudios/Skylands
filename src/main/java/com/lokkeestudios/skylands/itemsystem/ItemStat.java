@@ -1,6 +1,6 @@
 package com.lokkeestudios.skylands.itemsystem;
 
-import com.lokkeestudios.skylands.core.StringName;
+import com.lokkeestudios.skylands.core.Nameable;
 import com.lokkeestudios.skylands.core.utils.Constants;
 import org.bukkit.NamespacedKey;
 import org.checkerframework.checker.nullness.qual.NonNull;
@@ -8,7 +8,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 /**
  * Holds all the item stats.
  */
-public enum ItemStat implements StringName {
+public enum ItemStat implements Nameable {
 
     /**
      * The attack damage item stat.

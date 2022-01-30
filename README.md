@@ -1,6 +1,6 @@
 
-<div align="center">  
- <img src="icons/skylands.png" width="300px"/>  
+<div style="display: flex; justify-content: center;">  
+ <img src="icons/skylands.png" alt="Skylands logo" width="300"/>  
 </div>  
   
 # Skylands

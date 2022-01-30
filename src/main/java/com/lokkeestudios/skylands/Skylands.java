@@ -19,9 +19,9 @@ import com.lokkeestudios.skylands.npcsystem.NpcManager;
 import com.lokkeestudios.skylands.npcsystem.NpcRegistry;
 import com.lokkeestudios.skylands.npcsystem.command.NpcCommand;
 import com.lokkeestudios.skylands.npcsystem.event.NpcInteractListener;
+import com.lokkeestudios.skylands.npcsystem.event.NpcLookCloseListener;
 import com.lokkeestudios.skylands.npcsystem.event.NpcSpawnPacketListener;
 import com.lokkeestudios.skylands.npcsystem.event.RegisterNpcTeamListener;
-import com.lokkeestudios.skylands.npcsystem.event.NpcLookCloseListener;
 import io.github.retrooper.packetevents.factory.spigot.SpigotPacketEventsBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
@@ -84,8 +84,7 @@ public final class Skylands extends JavaPlugin {
                 | |_____ |      _||       ||   |    |       ||       || | |   || |_____
                 |_____  ||     |_ |_     _||   |___ |       ||  _    || |_|   ||_____  |
                  _____| ||    _  |  |   |  |       ||   _   || | |   ||       | _____| |
-                |_______||___| |_|  |___|  |_______||__| |__||_|  |__||______| |_______| v0.1.0
-                """);
+                |_______||___| |_|  |___|  |_______||__| |__||_|  |__||______| |_______|""" + " v." + getDescription().getVersion());
 
         try {
             commandManager = new PaperCommandManager<>(
@@ -96,7 +95,7 @@ public final class Skylands extends JavaPlugin {
             );
         } catch (Exception e) {
             getLogger().severe("Failed to initialize the command manager.");
-            Bukkit.getPluginManager().disablePlugin(this);
+            this.setEnabled(false);
             return;
         }
 
@@ -132,9 +131,9 @@ public final class Skylands extends JavaPlugin {
         final @NonNull PluginManager pluginManager = Bukkit.getServer().getPluginManager();
 
         pluginManager.registerEvents(new ServerLoadListener(npcManager), this);
-        pluginManager.registerEvents(new NpcLookCloseListener(this), this);
-        pluginManager.registerEvents(new NpcInteractListener(), this);
-        pluginManager.registerEvents(new RegisterNpcTeamListener(), this);
+        pluginManager.registerEvents(new NpcLookCloseListener(this, npcRegistry), this);
+        pluginManager.registerEvents(new NpcInteractListener(npcRegistry), this);
+        pluginManager.registerEvents(new RegisterNpcTeamListener(npcRegistry, npcManager), this);
     }
 
     /**
@@ -143,7 +142,7 @@ public final class Skylands extends JavaPlugin {
     private void registerPacketEvents() {
         final @NonNull EventManager eventManager = PacketEvents.getAPI().getEventManager();
 
-        eventManager.registerListener(new NpcSpawnPacketListener(this), PacketListenerPriority.LOW, true);
+        eventManager.registerListener(new NpcSpawnPacketListener(this, npcRegistry), PacketListenerPriority.LOW, true);
     }
 
     /**

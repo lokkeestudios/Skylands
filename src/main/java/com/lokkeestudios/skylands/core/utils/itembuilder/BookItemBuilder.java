@@ -6,53 +6,74 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
+import java.util.List;
+
 /**
- * An ItemBuilder purely designed for {@link Material#WRITTEN_BOOK}s.
- * <p>
- * Implemented in the main {@link ItemBuilder}.
+ * Modifies {@link ItemStack}s that have an ItemMeta type of {@link BookMeta}.
  * <p>
  * Extends the {@link BaseItemBuilder}.
  *
  * @author LOKKEE
- * @version 0.1
+ * @version 1.0
  */
-public final class BookItemBuilder extends BaseItemBuilder<BookItemBuilder> {
+public final class BookItemBuilder extends BaseItemBuilder<BookItemBuilder, BookMeta> {
 
     /**
      * Constructs a {@link BookItemBuilder}.
+     *
+     * @param itemStack the {@link ItemStack} of the BookItemBuilder
+     * @param itemMeta  the {@link BookMeta} of the BookItemBuilder
      */
-    BookItemBuilder() {
-        super(new ItemStack(Material.WRITTEN_BOOK));
+    private BookItemBuilder(
+            final @NonNull ItemStack itemStack,
+            final @NonNull BookMeta itemMeta
+    ) {
+        super(itemStack, itemMeta);
     }
 
     /**
-     * Constructs a {@link BookItemBuilder}.
-     * <p>
-     * Alternative constructor.
+     * Creates a {@link BookItemBuilder}.
+     *
+     * @param itemStack the {@link ItemStack} to base the builder off of
+     * @return the instance of the BookItemBuilder
      */
-    BookItemBuilder(final @NonNull ItemStack itemStack) {
-        super(itemStack);
-        if (itemStack.getType() != Material.WRITTEN_BOOK) {
-            throw new IllegalArgumentException("ItemStack requires the material to be a WRITTEN_BOOK.");
-        }
+    public static @NonNull BookItemBuilder of(final @NonNull ItemStack itemStack) throws IllegalArgumentException {
+        return new BookItemBuilder(itemStack, castMeta(itemStack.getItemMeta(), BookMeta.class));
+    }
+
+    /**
+     * Creates a {@link BookItemBuilder}.
+     * <p>
+     * Alternative method to create a BookItemBuilder.
+     *
+     * @param material the {@link Material} to base the builder off of
+     * @return the instance of the BookItemBuilder
+     */
+    public static @NonNull BookItemBuilder of(final @NonNull Material material) throws IllegalArgumentException {
+        return BookItemBuilder.of(getItem(material));
     }
 
     /**
      * Adds pages to the book of the {@link ItemStack}.
-     * <p>
-     * <b>Requires</b> the {@link Material} of the ItemStack to be a {@link Material#WRITTEN_BOOK}.
      *
-     * @param components the pages to add to the {@link BookMeta}
-     * @return the {@link ItemBuilder}
+     * @param pages the pages to add to the book
+     * @return the {@link BookItemBuilder}
      */
-    public BookItemBuilder pages(final @NonNull Component... components) {
-        if (getItemStack().getType() != Material.WRITTEN_BOOK) return this;
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public @NonNull BookItemBuilder pages(final @NonNull List<Component> pages) {
+        this.itemMeta.pages(pages);
+        return this;
+    }
 
-        final @NonNull BookMeta bookMeta = (BookMeta) getMeta();
-
-        bookMeta.addPages(components);
-
-        setMeta(bookMeta);
+    /**
+     * Adds pages to the book of the {@link ItemStack}.
+     *
+     * @param pages the pages to add to the book
+     * @return the {@link BookItemBuilder}
+     */
+    @SuppressWarnings("ResultOfMethodCallIgnored")
+    public @NonNull BookItemBuilder pages(final @NonNull Component... pages) {
+        this.itemMeta.pages(pages);
         return this;
     }
 }

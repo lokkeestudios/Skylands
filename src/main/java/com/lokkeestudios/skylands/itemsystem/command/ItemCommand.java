@@ -11,12 +11,14 @@ import cloud.commandframework.bukkit.parsers.PlayerArgument;
 import cloud.commandframework.context.CommandContext;
 import com.lokkeestudios.skylands.core.Rarity;
 import com.lokkeestudios.skylands.core.utils.Constants;
-import com.lokkeestudios.skylands.core.utils.TextUtil;
 import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
+import com.lokkeestudios.skylands.core.utils.itembuilder.LeatherArmorItemBuilder;
 import com.lokkeestudios.skylands.itemsystem.*;
 import com.lokkeestudios.skylands.itemsystem.gui.ItemGui;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.apache.commons.lang3.Range;
+import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -104,21 +106,37 @@ public final class ItemCommand {
         final Command.@NonNull Builder<CommandSender> modifySubCommand = builder.literal("modify");
 
         manager.command(modifySubCommand
-                .literal("name", ArgumentDescription.of("Sets the name of an itemstack"))
+                .literal("name", ArgumentDescription.of("Sets the name of a held itemstack"))
                 .argument(StringArgument.greedy("name"))
                 .permission(Constants.Permissions.ROOT_ITEMSYSTEM + ".modify.name")
                 .handler(this::processModifyName)
         );
 
         manager.command(modifySubCommand
-                .literal("addlore", ArgumentDescription.of("Adds a line to the lore of an itemstack"))
+                .literal("custommodeldata", ArgumentDescription.of("Sets the custom model data of a held itemstack"))
+                .argument(IntegerArgument.of("custom_model_data"))
+                .permission(Constants.Permissions.ROOT_ITEMSYSTEM + ".modify.custommodeldata")
+                .handler(this::processModifyCustomModelData)
+        );
+
+        manager.command(modifySubCommand
+                .literal("color", ArgumentDescription.of("Sets the leather color of a held itemstack"))
+                .argument(IntegerArgument.of("color_red"))
+                .argument(IntegerArgument.of("color_green"))
+                .argument(IntegerArgument.of("color_blue"))
+                .permission(Constants.Permissions.ROOT_ITEMSYSTEM + ".modify.color")
+                .handler(this::processModifyColor)
+        );
+
+        manager.command(modifySubCommand
+                .literal("addlore", ArgumentDescription.of("Adds a line to the lore of a held itemstack"))
                 .argument(StringArgument.greedy("text"))
                 .permission(Constants.Permissions.ROOT_ITEMSYSTEM + ".modify.addlore")
                 .handler(this::processModifyAddLore)
         );
 
         manager.command(modifySubCommand
-                .literal("removelore", ArgumentDescription.of("Removes a line from the lore of an itemstack"))
+                .literal("removelore", ArgumentDescription.of("Removes a line from the lore of a held itemstack"))
                 .argument(IntegerArgument.of("index"))
                 .permission(Constants.Permissions.ROOT_ITEMSYSTEM + ".modify.removelore")
                 .handler(this::processModifyRemoveLore)
@@ -317,11 +335,79 @@ public final class ItemCommand {
             ));
             return;
         }
-        player.getInventory().setItemInMainHand(ItemBuilder.from(itemStack).name(TextUtil.resetDefaults(name)).build());
+        player.getInventory().setItemInMainHand(ItemBuilder.of(itemStack).name(name).build());
 
         player.sendMessage(Constants.Text.PREFIX.append(Component
                 .text("Set the name to ", Constants.Text.STYLE_DEFAULT)
                 .append(name.style(Constants.Text.STYLE_HIGHLIGHTED))
+        ));
+    }
+
+    /**
+     * Modifies the custom model data of an {@link Item}.
+     *
+     * @param context the context of the given command
+     */
+    private void processModifyCustomModelData(final @NonNull CommandContext<CommandSender> context) {
+        final @NonNull Player player = (Player) context.getSender();
+
+        final @NonNull Integer customModelData = context.get("custom_model_data");
+        final @NonNull ItemStack itemStack = player.getInventory().getItemInMainHand();
+
+        if (itemStack.getType().equals(Material.AIR)) {
+            player.sendMessage(Constants.Text.PREFIX.append(Component
+                    .text("Hold the to be modified itemstack in your hand.", Constants.Text.STYLE_ALERT)
+            ));
+            return;
+        }
+        player.getInventory().setItemInMainHand(ItemBuilder.of(itemStack).customModelData(customModelData).build());
+
+        player.sendMessage(Constants.Text.PREFIX.append(Component
+                .text("Set the custom model data to ", Constants.Text.STYLE_DEFAULT)
+                .append(Component.text(customModelData).style(Constants.Text.STYLE_HIGHLIGHTED))
+        ));
+    }
+
+    /**
+     * Modifies the leather color of an {@link Item}.
+     *
+     * @param context the context of the given command
+     */
+    private void processModifyColor(final @NonNull CommandContext<CommandSender> context) {
+        final @NonNull Player player = (Player) context.getSender();
+
+        final int colorRed = context.get("color_red");
+        final int colorGreen = context.get("color_green");
+        final int colorBlue = context.get("color_blue");
+        final @NonNull ItemStack itemStack = player.getInventory().getItemInMainHand();
+
+        final @NonNull Range<Integer> rgbValuesRange = Range.between(0, 255);
+
+        if (!rgbValuesRange.contains(colorRed) || !rgbValuesRange.contains(colorGreen) || !rgbValuesRange.contains(colorBlue)) {
+            player.sendMessage(Constants.Text.PREFIX.append(Component
+                    .text("RGB color values must be between 0 and 255.", Constants.Text.STYLE_ALERT)
+            ));
+            return;
+        }
+        final @NonNull Color color = Color.fromRGB(colorRed, colorGreen, colorBlue);
+
+        if (itemStack.getType().equals(Material.AIR)) {
+            player.sendMessage(Constants.Text.PREFIX.append(Component
+                    .text("Hold the to be modified itemstack in your hand.", Constants.Text.STYLE_ALERT)
+            ));
+            return;
+        }
+
+        try {
+            player.getInventory().setItemInMainHand(LeatherArmorItemBuilder.of(itemStack).color(color).build());
+        } catch (final @NonNull IllegalArgumentException exception) {
+            player.sendMessage(Constants.Text.PREFIX.append(Component
+                    .text("The to be modified itemstack must be colorable.", Constants.Text.STYLE_ALERT)
+            ));
+            return;
+        }
+        player.sendMessage(Constants.Text.PREFIX.append(Component
+                .text("Set the color", Constants.Text.STYLE_DEFAULT)
         ));
     }
 

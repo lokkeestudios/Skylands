@@ -1,22 +1,43 @@
 package com.lokkeestudios.skylands.npcsystem;
 
+import com.github.retrooper.packetevents.PacketEvents;
+import com.github.retrooper.packetevents.manager.player.PlayerManager;
+import com.github.retrooper.packetevents.netty.channel.ChannelAbstract;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerTeams;
 import com.lokkeestudios.skylands.core.database.DatabaseManager;
 import com.lokkeestudios.skylands.core.utils.Constants;
+import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 /**
  * The manager for everything npc related.
  */
 public final class NpcManager {
+
+    /**
+     * The String name of the npc team.
+     */
+    private final @NonNull String teamName;
+
+    /**
+     * The {@link WrapperPlayServerTeams.ScoreBoardTeamInfo} of the npc team.
+     */
+    private final WrapperPlayServerTeams.ScoreBoardTeamInfo teamInfo;
 
     /**
      * The main {@link NpcRegistry} instance.
@@ -40,6 +61,9 @@ public final class NpcManager {
     ) {
         this.npcRegistry = npcRegistry;
         this.databaseManager = databaseManager;
+
+        this.teamName = UUID.randomUUID().toString();
+        this.teamInfo = new WrapperPlayServerTeams.ScoreBoardTeamInfo(Component.empty(), null, null, WrapperPlayServerTeams.NameTagVisibility.NEVER, WrapperPlayServerTeams.CollisionRule.NEVER, NamedTextColor.WHITE, WrapperPlayServerTeams.OptionData.NONE);
 
         setupDataTables();
     }
@@ -103,7 +127,7 @@ public final class NpcManager {
                 saveNpcStatement.setFloat(11, npcLocation.getPitch());
                 saveNpcStatement.setString(12, npc.getId());
                 saveNpcStatement.executeUpdate();
-                npc.remove();
+                removeNpc(npc.getId());
             } catch (final @NonNull SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -125,8 +149,8 @@ public final class NpcManager {
             final @NonNull String name,
             final @NonNull Location location
     ) {
-        final @NonNull String textureValue = Constants.Skins.NpcDefault.TEXTURE_VALUE;
-        final @NonNull String textureSignature = Constants.Skins.NpcDefault.TEXTURE_SIGNATURE;
+        final @NonNull String textureValue = Constants.Textures.NpcDefault.TEXTURE_VALUE;
+        final @NonNull String textureSignature = Constants.Textures.NpcDefault.TEXTURE_SIGNATURE;
         final @NonNull String title = Constants.Text.NPC_TITLE_DEFAULT;
 
         try (
@@ -157,7 +181,24 @@ public final class NpcManager {
         final @NonNull Npc npc = new Npc(id, type, name, location);
 
         npcRegistry.registerNpc(npc);
-        npc.registerToTeam();
+        spawnNpc(npc);
+        registerNpcToTeam(npc);
+    }
+
+    /**
+     * Registers a Npc to the npc team.
+     */
+    public void registerNpcToTeam(final @NonNull Npc npc) {
+
+        final @NonNull WrapperPlayServerTeams teamsPacket = new WrapperPlayServerTeams(teamName, WrapperPlayServerTeams.TeamMode.ADD_ENTITIES, Optional.of(teamInfo), Collections.singletonList(Integer.toString(npc.getEntity().getEntityId())));
+
+        final @NonNull PlayerManager playerManager = PacketEvents.getAPI().getPlayerManager();
+
+        for (final Player player : Bukkit.getOnlinePlayers()) {
+            final @NonNull ChannelAbstract channel = playerManager.getChannel(player);
+
+            playerManager.sendPacket(channel, teamsPacket);
+        }
     }
 
     /**
@@ -193,10 +234,10 @@ public final class NpcManager {
     public void setSkin(final @NonNull String id, final @NonNull String textureValue, final @NonNull String textureSignature) {
         final @NonNull Npc npc = npcRegistry.getNpcFromId(id);
 
-        npc.remove();
+        removeNpc(npc);
         npc.setTextureValue(textureValue);
         npc.setTextureSignature(textureSignature);
-        npc.spawn();
+        spawnNpc(npc);
     }
 
     /**
@@ -272,6 +313,8 @@ public final class NpcManager {
                     final @NonNull Npc npc = new Npc(id, type, textureValue, textureSignature, name, title, location);
 
                     npcRegistry.registerNpc(npc);
+                    spawnNpc(npc);
+                    registerNpcToTeam(npc);
                 }
             }
         } catch (final @NonNull SQLException e) {
@@ -280,13 +323,49 @@ public final class NpcManager {
     }
 
     /**
+     * Spawns the entity player of a {@link Npc}.
+     *
+     * @param npc the Npc whose entity should be removed
+     */
+    public void spawnNpc(final @NonNull Npc npc) {
+        npc.spawn();
+        npcRegistry.registerNpcEntity(npc.getEntity().getEntityId(), npc);
+    }
+
+    /**
      * Removes the entity player of a {@link Npc}.
      *
-     * @param id the id of the Npc
+     * @param npc the Npc whose entity should be removed
+     */
+    public void removeNpc(final @NonNull Npc npc) {
+        npcRegistry.unregisterNpcEntity(npc.getEntity().getEntityId());
+        npc.remove();
+    }
+
+    /**
+     * Removes the entity player of a {@link Npc}.
+     *
+     * @param id the id of the Npc whose entity should be removed
      */
     public void removeNpc(final @NonNull String id) {
-        final @NonNull Npc npc = npcRegistry.getNpcFromId(id);
+        removeNpc(npcRegistry.getNpcFromId(id));
+    }
 
-        npc.remove();
+    /**
+     * Gets the team name of the Npc team.
+     *
+     * @return the team name
+     */
+    public @NotNull String getTeamName() {
+        return teamName;
+    }
+
+    /**
+     * Gets the {@link  WrapperPlayServerTeams.ScoreBoardTeamInfo} of the Npc team.
+     *
+     * @return the scoreboard team info
+     */
+    public WrapperPlayServerTeams.ScoreBoardTeamInfo getTeamInfo() {
+        return teamInfo;
     }
 }

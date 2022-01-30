@@ -1,5 +1,6 @@
 package com.lokkeestudios.skylands.npcsystem;
 
+import net.minecraft.world.entity.LivingEntity;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.util.ArrayList;
@@ -22,7 +23,16 @@ public final class NpcRegistry {
     private final @NonNull Map<String, Npc> npcs = new LinkedHashMap<>();
 
     /**
-     * Registers an {@link Npc} by adding it to the registry.
+     * The {@link Map} holding the npcs related to their entities.
+     * <p>
+     * Key - The entity id of the {@link LivingEntity}.
+     * <p>
+     * Value - The instance of the Npc.
+     */
+    private final @NonNull Map<Integer, Npc> entities = new LinkedHashMap<>();
+
+    /**
+     * Registers a {@link Npc} by adding it to the registry.
      *
      * @param npc the Npc which is to be registered
      */
@@ -31,12 +41,31 @@ public final class NpcRegistry {
     }
 
     /**
-     * Unregisters an {@link Npc} by removing it from the registry.
+     * Registers an entity and its related {@link Npc} by adding it to the registry.
+     *
+     * @param entityId the entity id of the Npc which is to be registered
+     * @param npc      the Npc which is to be registered
+     */
+    public void registerNpcEntity(final int entityId, final @NonNull Npc npc) {
+        entities.put(entityId, npc);
+    }
+
+    /**
+     * Unregisters a {@link Npc} by removing it from the registry.
      *
      * @param id the id of the Npc which is to be unregistered
      */
     public void unregisterNpc(final @NonNull String id) {
         npcs.remove(id);
+    }
+
+    /**
+     * Unregisters a {@link Npc} by removing it from the registry.
+     *
+     * @param entityId the id of the Npc which is to be unregistered
+     */
+    public void unregisterNpcEntity(final int entityId) {
+        entities.remove(entityId);
     }
 
     /**
@@ -47,6 +76,16 @@ public final class NpcRegistry {
      */
     public @NonNull Npc getNpcFromId(final @NonNull String id) {
         return npcs.get(id);
+    }
+
+    /**
+     * Gets the {@link Npc} related to an entity id.
+     *
+     * @param entityId the entity id of the Npc which is wanted
+     * @return the Npc associated to the id
+     */
+    public @NonNull Npc getNpcFromEntityId(final int entityId) {
+        return entities.get(entityId);
     }
 
     /**
@@ -68,6 +107,15 @@ public final class NpcRegistry {
     }
 
     /**
+     * Gets all entity id registry keys.
+     *
+     * @return a {@link List} of all entity id registry keys
+     */
+    public @NonNull ArrayList<Integer> getEntityIds() {
+        return new ArrayList<>(entities.keySet());
+    }
+
+    /**
      * Checks whether a String id is a valid registry key.
      *
      * @param id the id for which is to be checked
@@ -75,5 +123,15 @@ public final class NpcRegistry {
      */
     public @NonNull Boolean isIdValid(final @NonNull String id) {
         return getIds().contains(id);
+    }
+
+    /**
+     * Checks whether an entity id corresponds to a {@link Npc}.
+     *
+     * @param entityId the entity id for which is to be checked
+     * @return whether the entity id is related
+     */
+    public @NonNull Boolean isEntityNpc(final int entityId) {
+        return getEntityIds().contains(entityId);
     }
 }

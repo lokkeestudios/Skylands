@@ -20,7 +20,7 @@ public final class ItemSerializer {
      * @param itemStack the ItemStack to be encoded to a Base64 String
      * @return a Base64 string of the provided ItemStack
      */
-    public static @NonNull String ItemStackToBase64(final @NonNull ItemStack itemStack) {
+    public static @NonNull String itemStackToBase64(final @NonNull ItemStack itemStack) {
         return Base64.getEncoder().encodeToString(itemStack.serializeAsBytes());
     }
 
@@ -30,7 +30,7 @@ public final class ItemSerializer {
      * @param data the Base64 string to be decoded to an ItemStack
      * @return the ItemStack created from the Base64 String
      */
-    public static @NonNull ItemStack ItemStackFromBase64(final @NonNull String data) {
+    public static @NonNull ItemStack itemStackFromBase64(final @NonNull String data) {
         return ItemStack.deserializeBytes(Base64.getDecoder().decode(data));
     }
 }

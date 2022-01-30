@@ -6,7 +6,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * An Interface which forces Classes to implement
  * a getName() method, which returns a String name.
  */
-public interface StringName {
+public interface Nameable {
 
     /**
      * Gets the String name.
