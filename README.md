@@ -8,4 +8,6 @@ The main goal of this System is to make it as easy as possible for people to cre
 If you look at it this way, Skylands is a toolbox that contains all the tools, required for a successful RPG.
 At least that is the idea behind it.
 
+For getting started, check out the fancy [documentation](https://github.com/lokkeestudios/Skylands/wiki)
+
 *reserved for a more detailed description*
