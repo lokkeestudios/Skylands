@@ -11,7 +11,10 @@ import net.kyori.adventure.text.format.NamedTextColor;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataContainer;
+import org.bukkit.persistence.PersistentDataType;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.jetbrains.annotations.NotNull;
 
@@ -63,9 +66,11 @@ public final class NpcManager {
         this.databaseManager = databaseManager;
 
         this.teamName = UUID.randomUUID().toString();
-        this.teamInfo = new WrapperPlayServerTeams.ScoreBoardTeamInfo(Component.empty(), null, null, WrapperPlayServerTeams.NameTagVisibility.NEVER, WrapperPlayServerTeams.CollisionRule.NEVER, NamedTextColor.WHITE, WrapperPlayServerTeams.OptionData.NONE);
-
-        setupDataTables();
+        this.teamInfo = new WrapperPlayServerTeams.ScoreBoardTeamInfo(
+                Component.empty(), null, null, WrapperPlayServerTeams.NameTagVisibility.NEVER,
+                WrapperPlayServerTeams.CollisionRule.NEVER, NamedTextColor.WHITE, WrapperPlayServerTeams.OptionData.NONE
+        );
+        this.setupDataTables();
     }
 
     /**
@@ -104,33 +109,53 @@ public final class NpcManager {
      */
     public void saveNpcs() {
         for (final @NonNull Npc npc : npcRegistry.getNpcs()) {
-            try (
-                    final @NonNull Connection connection = databaseManager.getConnection();
-                    final @NonNull PreparedStatement saveNpcStatement =
-                            connection.prepareStatement(
-                                    "UPDATE npc SET npc_type = ?, npc_texture_value = ?, npc_texture_signature = ?, npc_name = ?, npc_title = ?, " +
-                                            "npc_world = ?, npc_x = ?, npc_y = ?, npc_z = ?, npc_yaw = ?, npc_pitch = ? WHERE id = ?"
-                            )
-            ) {
-                final @NonNull Location npcLocation = npc.getLocation();
+            this.saveNpc(npc);
+        }
+    }
 
-                saveNpcStatement.setString(1, npc.getType().name());
-                saveNpcStatement.setString(2, npc.getTextureValue());
-                saveNpcStatement.setString(3, npc.getTextureSignature());
-                saveNpcStatement.setString(4, npc.getName());
-                saveNpcStatement.setString(5, npc.getTitle());
-                saveNpcStatement.setString(6, npcLocation.getWorld().getName());
-                saveNpcStatement.setDouble(7, npcLocation.getX());
-                saveNpcStatement.setDouble(8, npcLocation.getY());
-                saveNpcStatement.setDouble(9, npcLocation.getZ());
-                saveNpcStatement.setFloat(10, npcLocation.getYaw());
-                saveNpcStatement.setFloat(11, npcLocation.getPitch());
-                saveNpcStatement.setString(12, npc.getId());
-                saveNpcStatement.executeUpdate();
-                removeNpc(npc.getId());
-            } catch (final @NonNull SQLException e) {
-                throw new RuntimeException(e);
-            }
+    /**
+     * Disables the Npc System and saves all {@link Npc}s
+     * which are stored in the {@link NpcRegistry} to the database.
+     */
+    public void disable() {
+        for (final @NonNull Npc npc : npcRegistry.getNpcs()) {
+            this.saveNpc(npc);
+            npc.remove();
+        }
+    }
+
+    /**
+     * Saves a {@link Npc}s which is stored
+     * in the {@link NpcRegistry} to the database.
+     *
+     * @param npc the Npc which is to be saved
+     */
+    public void saveNpc(final @NonNull Npc npc) {
+        try (
+                final @NonNull Connection connection = databaseManager.getConnection();
+                final @NonNull PreparedStatement saveNpcStatement =
+                        connection.prepareStatement(
+                                "UPDATE npc SET npc_type = ?, npc_texture_value = ?, npc_texture_signature = ?, npc_name = ?, npc_title = ?, " +
+                                        "npc_world = ?, npc_x = ?, npc_y = ?, npc_z = ?, npc_yaw = ?, npc_pitch = ? WHERE id = ?"
+                        )
+        ) {
+            final @NonNull Location npcLocation = npc.getLocation();
+
+            saveNpcStatement.setString(1, npc.getType().name());
+            saveNpcStatement.setString(2, npc.getTextureValue());
+            saveNpcStatement.setString(3, npc.getTextureSignature());
+            saveNpcStatement.setString(4, npc.getName());
+            saveNpcStatement.setString(5, npc.getTitle());
+            saveNpcStatement.setString(6, npcLocation.getWorld().getName());
+            saveNpcStatement.setDouble(7, npcLocation.getX());
+            saveNpcStatement.setDouble(8, npcLocation.getY());
+            saveNpcStatement.setDouble(9, npcLocation.getZ());
+            saveNpcStatement.setFloat(10, npcLocation.getYaw());
+            saveNpcStatement.setFloat(11, npcLocation.getPitch());
+            saveNpcStatement.setString(12, npc.getId());
+            saveNpcStatement.executeUpdate();
+        } catch (final @NonNull SQLException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -181,7 +206,7 @@ public final class NpcManager {
         final @NonNull Npc npc = new Npc(id, type, name, location);
 
         npcRegistry.registerNpc(npc);
-        spawnNpc(npc);
+        npc.spawn();
         registerNpcToTeam(npc);
     }
 
@@ -220,7 +245,8 @@ public final class NpcManager {
         } catch (final @NonNull SQLException e) {
             throw new RuntimeException(e);
         }
-        removeNpc(id);
+        final @NonNull Npc npc = npcRegistry.getNpcFromId(id);
+        npc.remove();
         npcRegistry.unregisterNpc(id);
     }
 
@@ -234,10 +260,10 @@ public final class NpcManager {
     public void setSkin(final @NonNull String id, final @NonNull String textureValue, final @NonNull String textureSignature) {
         final @NonNull Npc npc = npcRegistry.getNpcFromId(id);
 
-        removeNpc(npc);
+        npc.remove();
         npc.setTextureValue(textureValue);
         npc.setTextureSignature(textureSignature);
-        spawnNpc(npc);
+        npc.spawn();
     }
 
     /**
@@ -313,7 +339,7 @@ public final class NpcManager {
                     final @NonNull Npc npc = new Npc(id, type, textureValue, textureSignature, name, title, location);
 
                     npcRegistry.registerNpc(npc);
-                    spawnNpc(npc);
+                    npc.spawn();
                     registerNpcToTeam(npc);
                 }
             }
@@ -323,32 +349,31 @@ public final class NpcManager {
     }
 
     /**
-     * Spawns the entity player of a {@link Npc}.
+     * Gets the {@link Npc} related to an {@link LivingEntity}.
      *
-     * @param npc the Npc whose entity should be removed
+     * @param entity the entity of the Npc which is wanted
+     * @return the Npc associated to the id
      */
-    public void spawnNpc(final @NonNull Npc npc) {
-        npc.spawn();
-        npcRegistry.registerNpcEntity(npc.getEntity().getEntityId(), npc);
+    public @NonNull Npc getNpcFromEntity(final @NonNull LivingEntity entity) {
+        final @NonNull PersistentDataContainer dataContainer = entity.getPersistentDataContainer();
+        final @NonNull String id = Objects.requireNonNull(dataContainer.get(Constants.NamespacedKeys.KEY_ID, PersistentDataType.STRING));
+
+        return npcRegistry.getNpcFromId(id);
     }
 
     /**
-     * Removes the entity player of a {@link Npc}.
+     * Checks whether an {@link LivingEntity} corresponds to a {@link Npc}.
      *
-     * @param npc the Npc whose entity should be removed
+     * @param entity the entity for which is to be checked
+     * @return whether the entity id is related
      */
-    public void removeNpc(final @NonNull Npc npc) {
-        npcRegistry.unregisterNpcEntity(npc.getEntity().getEntityId());
-        npc.remove();
-    }
+    public boolean isEntityNpc(final @NonNull LivingEntity entity) {
+        final @NonNull PersistentDataContainer dataContainer = entity.getPersistentDataContainer();
+        final String id = dataContainer.get(Constants.NamespacedKeys.KEY_ID, PersistentDataType.STRING);
 
-    /**
-     * Removes the entity player of a {@link Npc}.
-     *
-     * @param id the id of the Npc whose entity should be removed
-     */
-    public void removeNpc(final @NonNull String id) {
-        removeNpc(npcRegistry.getNpcFromId(id));
+        if (id == null) return false;
+
+        return npcRegistry.isIdValid(id);
     }
 
     /**

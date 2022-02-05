@@ -20,7 +20,7 @@ import java.util.UUID;
  * @author LOKKEE
  * @version 1.0
  */
-public final class SkullItemBuilder extends BaseItemBuilder<SkullItemBuilder, SkullMeta> {
+public final class SkullItemBuilder extends BaseItemBuilder<@NonNull SkullItemBuilder, @NonNull SkullMeta> {
 
     /**
      * Constructs a {@link SkullItemBuilder}.
@@ -40,8 +40,9 @@ public final class SkullItemBuilder extends BaseItemBuilder<SkullItemBuilder, Sk
      *
      * @param itemStack the {@link ItemStack} to base the builder off of
      * @return the instance of the SkullItemBuilder
+     * @throws IllegalArgumentException if the item is not of the correct item meta
      */
-    public static @NonNull SkullItemBuilder of(final @NonNull ItemStack itemStack) throws IllegalArgumentException {
+    public static @NonNull SkullItemBuilder of(final @NonNull ItemStack itemStack) throws @NonNull IllegalArgumentException {
         return new SkullItemBuilder(itemStack, castMeta(itemStack.getItemMeta(), SkullMeta.class));
     }
 
@@ -52,10 +53,10 @@ public final class SkullItemBuilder extends BaseItemBuilder<SkullItemBuilder, Sk
      *
      * @param material the {@link Material} to base the builder off of
      * @return the instance of the SkullItemBuilder
-     * @throws IllegalArgumentException if the {@link Material} is not an obtainable item,
+     * @throws IllegalArgumentException if the Material is not an obtainable item,
      *                                  or if the Material's ItemMeta is not of the correct type
      */
-    public static @NonNull SkullItemBuilder of(final @NonNull Material material) throws IllegalArgumentException {
+    public static @NonNull SkullItemBuilder of(final @NonNull Material material) throws @NonNull IllegalArgumentException {
         return SkullItemBuilder.of(getItem(material));
     }
 
@@ -68,7 +69,7 @@ public final class SkullItemBuilder extends BaseItemBuilder<SkullItemBuilder, Sk
      * @throws IllegalArgumentException if the {@link Material} is not an obtainable item,
      *                                  or if the Material's ItemMeta is not of the correct type
      */
-    public static @NonNull SkullItemBuilder of() throws IllegalArgumentException {
+    public static @NonNull SkullItemBuilder of() throws @NonNull IllegalArgumentException {
         return of(Material.PLAYER_HEAD);
     }
 
@@ -84,8 +85,9 @@ public final class SkullItemBuilder extends BaseItemBuilder<SkullItemBuilder, Sk
         final @NonNull PlayerProfile profile = Optional
                 .ofNullable(this.itemMeta.getPlayerProfile())
                 .orElse(Bukkit.createProfile(uuid));
-
         profile.setProperty(new ProfileProperty("textures", data));
+
+        this.itemMeta.setPlayerProfile(profile);
         return this;
     }
 

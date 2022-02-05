@@ -89,14 +89,7 @@ public final class ItemGui {
     public ItemGui(
             final @NonNull ItemRegistry itemRegistry
     ) {
-        searchFilter = null;
-        sortFilter = null;
-        typeFilter = null;
-        rarityFilter = null;
-
-        this.itemRegistry = itemRegistry;
-
-        constructGui();
+        this(null, null, null, null, itemRegistry);
     }
 
     /**

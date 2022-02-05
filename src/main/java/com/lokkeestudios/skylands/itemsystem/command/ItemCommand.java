@@ -11,6 +11,7 @@ import cloud.commandframework.bukkit.parsers.PlayerArgument;
 import cloud.commandframework.context.CommandContext;
 import com.lokkeestudios.skylands.core.Rarity;
 import com.lokkeestudios.skylands.core.utils.Constants;
+import com.lokkeestudios.skylands.core.utils.TextUtil;
 import com.lokkeestudios.skylands.core.utils.itembuilder.ItemBuilder;
 import com.lokkeestudios.skylands.core.utils.itembuilder.LeatherArmorItemBuilder;
 import com.lokkeestudios.skylands.itemsystem.*;
@@ -234,7 +235,7 @@ public final class ItemCommand {
         if (context.contains("player")) {
             target = context.get("player");
 
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("Opened the items menu for ", Constants.Text.STYLE_DEFAULT)
                     .append(Component.text(target.getName(), Constants.Text.STYLE_HIGHLIGHTED))
             ));
@@ -253,7 +254,7 @@ public final class ItemCommand {
         final @NonNull String id = context.get("id");
 
         if (!itemRegistry.isIdValid(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing item with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
@@ -263,7 +264,7 @@ public final class ItemCommand {
         if (context.contains("player")) {
             target = context.get("player");
 
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("Gave the build itemstack of ", Constants.Text.STYLE_DEFAULT)
                     .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
                     .append(Component.text(" to ", Constants.Text.STYLE_DEFAULT))
@@ -287,32 +288,32 @@ public final class ItemCommand {
         final @NonNull ItemStack itemStack = player.getInventory().getItemInMainHand();
 
         if (itemStack.getType().equals(Material.AIR)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("Hold an itemstack for the item in your hand.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         if (itemStack.getItemMeta().displayName() == null) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("The itemstack may need to have a display name.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         if (itemRegistry.getIds().contains(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is already an existing item with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         if (id.length() > 30) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("The id of an item may not be longer than 30 characters.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         itemManager.createItem(id, type, rarity, itemStack);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Successfully created the item ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
         ));
@@ -330,14 +331,14 @@ public final class ItemCommand {
         final @NonNull ItemStack itemStack = player.getInventory().getItemInMainHand();
 
         if (itemStack.getType().equals(Material.AIR)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("Hold the to be modified itemstack in your hand.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         player.getInventory().setItemInMainHand(ItemBuilder.of(itemStack).name(name).build());
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Set the name to ", Constants.Text.STYLE_DEFAULT)
                 .append(name.style(Constants.Text.STYLE_HIGHLIGHTED))
         ));
@@ -355,14 +356,14 @@ public final class ItemCommand {
         final @NonNull ItemStack itemStack = player.getInventory().getItemInMainHand();
 
         if (itemStack.getType().equals(Material.AIR)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("Hold the to be modified itemstack in your hand.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         player.getInventory().setItemInMainHand(ItemBuilder.of(itemStack).customModelData(customModelData).build());
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Set the custom model data to ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(customModelData).style(Constants.Text.STYLE_HIGHLIGHTED))
         ));
@@ -381,10 +382,10 @@ public final class ItemCommand {
         final int colorBlue = context.get("color_blue");
         final @NonNull ItemStack itemStack = player.getInventory().getItemInMainHand();
 
-        final @NonNull Range<Integer> rgbValuesRange = Range.between(0, 255);
+        final @NonNull Range<@NonNull Integer> rgbValuesRange = Range.between(0, 255);
 
         if (!rgbValuesRange.contains(colorRed) || !rgbValuesRange.contains(colorGreen) || !rgbValuesRange.contains(colorBlue)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("RGB color values must be between 0 and 255.", Constants.Text.STYLE_ALERT)
             ));
             return;
@@ -392,7 +393,7 @@ public final class ItemCommand {
         final @NonNull Color color = Color.fromRGB(colorRed, colorGreen, colorBlue);
 
         if (itemStack.getType().equals(Material.AIR)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("Hold the to be modified itemstack in your hand.", Constants.Text.STYLE_ALERT)
             ));
             return;
@@ -401,12 +402,12 @@ public final class ItemCommand {
         try {
             player.getInventory().setItemInMainHand(LeatherArmorItemBuilder.of(itemStack).color(color).build());
         } catch (final @NonNull IllegalArgumentException exception) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("The to be modified itemstack must be colorable.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Set the color", Constants.Text.STYLE_DEFAULT)
         ));
     }
@@ -423,7 +424,7 @@ public final class ItemCommand {
         final @NonNull ItemStack itemStack = player.getInventory().getItemInMainHand();
 
         if (itemStack.getType().equals(Material.AIR)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("Hold the to be modified itemstack in your hand.", Constants.Text.STYLE_ALERT)
             ));
             return;
@@ -440,7 +441,7 @@ public final class ItemCommand {
 
         player.getInventory().setItemInMainHand(itemStack);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Added the line ", Constants.Text.STYLE_DEFAULT)
                 .append(text)
         ));
@@ -458,7 +459,7 @@ public final class ItemCommand {
         final @NonNull ItemStack itemStack = player.getInventory().getItemInMainHand();
 
         if (itemStack.getType().equals(Material.AIR)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("Hold the to be modified itemstack in your hand.", Constants.Text.STYLE_ALERT)
             ));
             return;
@@ -469,7 +470,7 @@ public final class ItemCommand {
                 || Objects.requireNonNull(itemMeta.lore()).size() <= index
                 || 0 > index
         ) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing line at index ", Constants.Text.STYLE_ALERT)
                     .append(Component.text(index, Constants.Text.STYLE_DEFAULT))
             ));
@@ -483,7 +484,7 @@ public final class ItemCommand {
 
         player.getInventory().setItemInMainHand(itemStack);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Removed the line at index ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(index, Constants.Text.STYLE_ALERT))
         ));
@@ -500,7 +501,7 @@ public final class ItemCommand {
         final @NonNull String id = context.get("id");
 
         if (!itemRegistry.isIdValid(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing item with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
@@ -508,7 +509,7 @@ public final class ItemCommand {
         final @NonNull Item item = itemRegistry.getItemFromId(id);
         player.getInventory().addItem(item.getItemStack());
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("You were given the internal itemstack of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
         ));
@@ -526,26 +527,26 @@ public final class ItemCommand {
         final @NonNull ItemStack itemStack = player.getInventory().getItemInMainHand();
 
         if (itemStack.getType().equals(Material.AIR)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("Hold an itemstack for the item in your hand.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         if (itemStack.getItemMeta().displayName() == null) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("The itemstack may need to have a display name.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         if (!itemRegistry.isIdValid(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing item with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         itemManager.setItemStack(id, itemStack);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Set the internal itemstack of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
         ));
@@ -563,14 +564,14 @@ public final class ItemCommand {
         final @NonNull Rarity rarity = context.get("rarity");
 
         if (!itemRegistry.isIdValid(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing item with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         itemManager.setRarity(id, rarity);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Set the rarity of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
                 .append(Component.text(" to ", Constants.Text.STYLE_DEFAULT))
@@ -591,14 +592,14 @@ public final class ItemCommand {
         final double value = context.get("value");
 
         if (!itemRegistry.isIdValid(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing item with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         itemManager.setStat(id, stat, value);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Set the ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(stat.getName(), Constants.Text.STYLE_HIGHLIGHTED))
                 .append(Component.text(" value of ", Constants.Text.STYLE_DEFAULT))
@@ -619,14 +620,14 @@ public final class ItemCommand {
         final @NonNull String id = context.get("id");
 
         if (!itemRegistry.isIdValid(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing item with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         itemManager.deleteItem(id);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Successfully deleted the item ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_ALERT))
         ));

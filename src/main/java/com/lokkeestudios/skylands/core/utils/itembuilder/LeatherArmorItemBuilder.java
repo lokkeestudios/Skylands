@@ -17,7 +17,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * @author LOKKEE
  * @version 1.0
  */
-public final class LeatherArmorItemBuilder extends BaseItemBuilder<LeatherArmorItemBuilder, LeatherArmorMeta> {
+public final class LeatherArmorItemBuilder extends BaseItemBuilder<@NonNull LeatherArmorItemBuilder, @NonNull LeatherArmorMeta> {
 
     /**
      * Constructs a {@link LeatherArmorItemBuilder}.
@@ -37,8 +37,9 @@ public final class LeatherArmorItemBuilder extends BaseItemBuilder<LeatherArmorI
      *
      * @param itemStack the {@link ItemStack} to base the builder off of
      * @return the instance of the LeatherArmorItemBuilder
+     * @throws IllegalArgumentException if the item is not of the correct item meta
      */
-    public static @NonNull LeatherArmorItemBuilder of(final @NonNull ItemStack itemStack) throws IllegalArgumentException {
+    public static @NonNull LeatherArmorItemBuilder of(final @NonNull ItemStack itemStack) throws @NonNull IllegalArgumentException {
         return new LeatherArmorItemBuilder(itemStack, castMeta(itemStack.getItemMeta(), LeatherArmorMeta.class));
     }
 
@@ -49,8 +50,9 @@ public final class LeatherArmorItemBuilder extends BaseItemBuilder<LeatherArmorI
      *
      * @param material the {@link Material} to base the builder off of
      * @return the instance of the LeatherArmorItemBuilder
+     * @throws IllegalArgumentException if the item is not of the correct item meta
      */
-    public static @NonNull LeatherArmorItemBuilder of(final @NonNull Material material) throws IllegalArgumentException {
+    public static @NonNull LeatherArmorItemBuilder of(final @NonNull Material material) throws @NonNull IllegalArgumentException {
         return LeatherArmorItemBuilder.of(getItem(material));
     }
 

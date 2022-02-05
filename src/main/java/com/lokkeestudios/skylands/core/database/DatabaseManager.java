@@ -1,8 +1,8 @@
 package com.lokkeestudios.skylands.core.database;
 
+import com.lokkeestudios.skylands.Skylands;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import com.lokkeestudios.skylands.Skylands;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 import java.io.File;
@@ -34,9 +34,9 @@ public final class DatabaseManager {
 
         setupProperties();
 
-        final @NonNull HikariConfig config = new HikariConfig(skylands.getDataFolder() + "/database.properties");
+        final @NonNull HikariConfig config = new HikariConfig(this.skylands.getDataFolder() + "/database.properties");
 
-        dataSource = new HikariDataSource(config);
+        this.dataSource = new HikariDataSource(config);
     }
 
     /**
@@ -44,11 +44,11 @@ public final class DatabaseManager {
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
     private void setupProperties() {
-        final @NonNull File propertiesFile = new File(skylands.getDataFolder(), "database.properties");
+        final @NonNull File propertiesFile = new File(this.skylands.getDataFolder(), "database.properties");
 
         if (!propertiesFile.exists()) {
             propertiesFile.getParentFile().mkdirs();
-            skylands.saveResource("database.properties", false);
+            this.skylands.saveResource("database.properties", false);
         }
     }
 
@@ -57,7 +57,7 @@ public final class DatabaseManager {
      *
      * @return the Connection
      */
-    public @NonNull Connection getConnection() throws SQLException {
-        return dataSource.getConnection();
+    public @NonNull Connection getConnection() throws @NonNull SQLException {
+        return this.dataSource.getConnection();
     }
 }

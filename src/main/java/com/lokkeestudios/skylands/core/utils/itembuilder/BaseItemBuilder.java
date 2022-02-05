@@ -28,7 +28,7 @@ import java.util.Map;
  * @version 1.0
  */
 @SuppressWarnings({"unchecked"})
-public abstract class BaseItemBuilder<B extends BaseItemBuilder<B, M>, M extends ItemMeta> {
+public abstract class BaseItemBuilder<@NonNull B extends @NonNull BaseItemBuilder<@NonNull B, @NonNull M>, @NonNull M extends @NonNull ItemMeta> {
 
     /**
      * The {@link ItemStack} of the builder
@@ -49,7 +49,7 @@ public abstract class BaseItemBuilder<B extends BaseItemBuilder<B, M>, M extends
     protected BaseItemBuilder(
             final @NonNull ItemStack itemStack,
             final @NonNull M itemMeta
-    ) {
+    ) throws @NonNull NullPointerException {
         this.itemStack = itemStack.clone();
         this.itemMeta = itemMeta;
     }
@@ -64,11 +64,13 @@ public abstract class BaseItemBuilder<B extends BaseItemBuilder<B, M>, M extends
      * @return the item meta cast to the expected type
      * @throws IllegalArgumentException if the item meta is not the expected type
      */
-    protected static <T extends ItemMeta> T castMeta(final @NonNull ItemMeta itemMeta, final @NonNull Class<T> expectedType)
-            throws IllegalArgumentException {
+    protected static <@NonNull T extends @NonNull ItemMeta> @NonNull T castMeta(
+            final @NonNull ItemMeta itemMeta,
+            final @NonNull Class<T> expectedType
+    ) throws IllegalArgumentException {
         try {
             return expectedType.cast(itemMeta);
-        } catch (final ClassCastException e) {
+        } catch (final @NonNull ClassCastException exception) {
             throw new IllegalArgumentException("The ItemMeta must be of type "
                     + expectedType.getSimpleName()
                     + " but received ItemMeta of type "
@@ -84,7 +86,7 @@ public abstract class BaseItemBuilder<B extends BaseItemBuilder<B, M>, M extends
      * @return an ItemStack of the given Material
      * @throws IllegalArgumentException if the Material is not an item
      */
-    protected static @NonNull ItemStack getItem(final @NonNull Material material) throws IllegalArgumentException {
+    protected static @NonNull ItemStack getItem(final @NonNull Material material) throws @NonNull IllegalArgumentException {
         if (!material.isItem()) throw new IllegalArgumentException("The Material must be an obtainable item.");
 
         return new ItemStack(material);
@@ -211,7 +213,7 @@ public abstract class BaseItemBuilder<B extends BaseItemBuilder<B, M>, M extends
      */
     public <T, Z> @NonNull B data(
             final @NonNull NamespacedKey key,
-            final @NonNull PersistentDataType<T, Z> type,
+            final @NonNull PersistentDataType<@NonNull T, @NonNull Z> type,
             final @NonNull Z value
     ) {
         this.itemMeta.getPersistentDataContainer().set(key, type, value);
@@ -225,7 +227,7 @@ public abstract class BaseItemBuilder<B extends BaseItemBuilder<B, M>, M extends
      * @return the builder
      */
     public @NonNull B flags(
-            final @NonNull List<ItemFlag> flags
+            final @NonNull List<@NonNull ItemFlag> flags
     ) {
         this.itemMeta.addItemFlags(flags.toArray(new ItemFlag[0]));
         return (B) this;
@@ -251,7 +253,7 @@ public abstract class BaseItemBuilder<B extends BaseItemBuilder<B, M>, M extends
      * @return the builder
      */
     public @NonNull B enchants(
-            final @NonNull Map<Enchantment, Integer> enchantments
+            final @NonNull Map<@NonNull Enchantment, @NonNull Integer> enchantments
     ) {
         this.itemStack.addEnchantments(enchantments);
         return (B) this;

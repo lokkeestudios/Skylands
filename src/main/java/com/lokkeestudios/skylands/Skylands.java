@@ -12,6 +12,7 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerCh
 import com.lokkeestudios.skylands.core.command.CommandExceptionHandler;
 import com.lokkeestudios.skylands.core.database.DatabaseManager;
 import com.lokkeestudios.skylands.core.event.ServerLoadListener;
+import com.lokkeestudios.skylands.core.tasks.SaveDataManager;
 import com.lokkeestudios.skylands.itemsystem.ItemManager;
 import com.lokkeestudios.skylands.itemsystem.ItemRegistry;
 import com.lokkeestudios.skylands.itemsystem.command.ItemCommand;
@@ -59,6 +60,11 @@ public final class Skylands extends JavaPlugin {
     private NpcManager npcManager;
 
     /**
+     * The main {@link SaveDataManager}.
+     */
+    private SaveDataManager saveDataTaskManager;
+
+    /**
      * Handles everything which needs to be done,
      * when the {@link Skylands} plugin is being loaded.
      */
@@ -69,13 +75,12 @@ public final class Skylands extends JavaPlugin {
         WrapperPlayServerChatMessage.HANDLE_JSON = false;
     }
 
-
     /**
      * Handles everything which needs to be done,
      * when the {@link Skylands} plugin is being enabled.
      */
     @Override
-    public void onEnable() {
+    public synchronized void onEnable() {
         getLogger().info("""
                  
                  _______  ___   _  __   __  ___      _______  __    _  ______   _______
@@ -87,13 +92,13 @@ public final class Skylands extends JavaPlugin {
                 |_______||___| |_|  |___|  |_______||__| |__||_|  |__||______| |_______|""" + " v." + getDescription().getVersion());
 
         try {
-            commandManager = new PaperCommandManager<>(
+            this.commandManager = new PaperCommandManager<>(
                     this,
                     CommandExecutionCoordinator.simpleCoordinator(),
                     Function.identity(),
                     Function.identity()
             );
-        } catch (Exception e) {
+        } catch (final @NonNull Exception exception) {
             getLogger().severe("Failed to initialize the command manager.");
             this.setEnabled(false);
             return;
@@ -101,11 +106,15 @@ public final class Skylands extends JavaPlugin {
 
         final @NonNull DatabaseManager databaseManager = new DatabaseManager(this);
 
-        itemRegistry = new ItemRegistry();
-        itemManager = new ItemManager(itemRegistry, databaseManager);
+        this.itemRegistry = new ItemRegistry();
+        this.itemManager = new ItemManager(itemRegistry, databaseManager);
 
-        npcRegistry = new NpcRegistry();
-        npcManager = new NpcManager(npcRegistry, databaseManager);
+        this.npcRegistry = new NpcRegistry();
+        this.npcManager = new NpcManager(npcRegistry, databaseManager);
+
+        final long saveDataInterval = 20L * 60 * 10;
+        this.saveDataTaskManager = new SaveDataManager(this, npcManager, itemManager);
+        this.saveDataTaskManager.startTask(saveDataInterval);
 
         registerEvents();
         registerCommands();
@@ -119,8 +128,8 @@ public final class Skylands extends JavaPlugin {
      * when the {@link Skylands} plugin is being disabled.
      */
     @Override
-    public void onDisable() {
-        saveData();
+    public synchronized void onDisable() {
+        this.saveDataTaskManager.disableSystems();
         PacketEvents.getAPI().terminate();
     }
 
@@ -132,7 +141,7 @@ public final class Skylands extends JavaPlugin {
 
         pluginManager.registerEvents(new ServerLoadListener(npcManager), this);
         pluginManager.registerEvents(new NpcLookCloseListener(this, npcRegistry), this);
-        pluginManager.registerEvents(new NpcInteractListener(npcRegistry), this);
+        pluginManager.registerEvents(new NpcInteractListener(npcManager), this);
         pluginManager.registerEvents(new RegisterNpcTeamListener(npcRegistry, npcManager), this);
     }
 
@@ -142,7 +151,7 @@ public final class Skylands extends JavaPlugin {
     private void registerPacketEvents() {
         final @NonNull EventManager eventManager = PacketEvents.getAPI().getEventManager();
 
-        eventManager.registerListener(new NpcSpawnPacketListener(this, npcRegistry), PacketListenerPriority.LOW, true);
+        eventManager.registerListener(new NpcSpawnPacketListener(this, npcManager), PacketListenerPriority.LOW, true);
     }
 
     /**
@@ -156,13 +165,5 @@ public final class Skylands extends JavaPlugin {
         npcCommand.register(commandManager);
 
         new CommandExceptionHandler<CommandSender>().apply(commandManager, AudienceProvider.nativeAudience());
-    }
-
-    /**
-     * Saves the data of all systems.
-     */
-    private void saveData() {
-        npcManager.saveNpcs();
-        itemManager.saveItems();
     }
 }

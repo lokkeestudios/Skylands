@@ -1,6 +1,8 @@
 package com.lokkeestudios.skylands.npcsystem.event;
 
-import com.lokkeestudios.skylands.npcsystem.NpcRegistry;
+import com.lokkeestudios.skylands.npcsystem.NpcManager;
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -13,30 +15,33 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public class NpcInteractListener implements Listener {
 
     /**
-     * The main {@link NpcRegistry} instance.
+     * The main {@link NpcManager} instance.
      */
-    private final @NonNull NpcRegistry npcRegistry;
+    private final @NonNull NpcManager npcManager;
 
     /**
      * Constructs the {@link NpcInteractListener}.
      *
-     * @param npcRegistry the main {@link NpcRegistry} instance
+     * @param npcManager the main {@link NpcManager} instance
      */
     public NpcInteractListener(
-            final @NonNull NpcRegistry npcRegistry
+            final @NonNull NpcManager npcManager
     ) {
-        this.npcRegistry = npcRegistry;
+        this.npcManager = npcManager;
     }
 
     @EventHandler
     public void onNpcManipulate(final @NonNull PlayerArmorStandManipulateEvent event) {
-        if (!npcRegistry.isEntityNpc(event.getRightClicked().getEntityId())) return;
+        if (!npcManager.isEntityNpc(event.getRightClicked())) return;
         event.setCancelled(true);
     }
 
     @EventHandler
     public void onNpcRightClick(final @NonNull PlayerInteractEntityEvent event) {
-        if (!npcRegistry.isEntityNpc(event.getRightClicked().getEntityId())) return;
+        final @NonNull Entity entity = event.getRightClicked();
+
+        if (!(entity instanceof LivingEntity)) return;
+        if (!npcManager.isEntityNpc((LivingEntity) entity)) return;
 
         if (event.getHand() == EquipmentSlot.OFF_HAND) return;
         final @NonNull Player player = event.getPlayer();
@@ -46,7 +51,10 @@ public class NpcInteractListener implements Listener {
 
     @EventHandler
     public void onNpcLeftClick(final @NonNull EntityDamageByEntityEvent event) {
-        if (!npcRegistry.isEntityNpc(event.getEntity().getEntityId())) return;
+        final @NonNull Entity entity = event.getEntity();
+
+        if (!(entity instanceof LivingEntity)) return;
+        if (!npcManager.isEntityNpc((LivingEntity) entity)) return;
         event.setCancelled(true);
 
         if (!(event.getDamager() instanceof Player player)) return;

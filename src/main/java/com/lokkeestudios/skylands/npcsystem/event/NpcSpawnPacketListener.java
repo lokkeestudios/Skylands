@@ -2,19 +2,25 @@ package com.lokkeestudios.skylands.npcsystem.event;
 
 import com.github.retrooper.packetevents.PacketEvents;
 import com.github.retrooper.packetevents.event.PacketListener;
-import com.github.retrooper.packetevents.event.impl.PacketSendEvent;
+import com.github.retrooper.packetevents.event.PacketSendEvent;
 import com.github.retrooper.packetevents.manager.player.PlayerManager;
 import com.github.retrooper.packetevents.netty.channel.ChannelAbstract;
-import com.github.retrooper.packetevents.protocol.entity.type.EntityTypes;
+import com.github.retrooper.packetevents.protocol.entity.data.provider.EntityDataProvider;
+import com.github.retrooper.packetevents.protocol.entity.data.provider.PlayerDataProvider;
 import com.github.retrooper.packetevents.protocol.packettype.PacketType;
+import com.github.retrooper.packetevents.protocol.player.SkinSection;
 import com.github.retrooper.packetevents.protocol.world.Location;
+import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerEntityMetadata;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPlayerInfo;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnLivingEntity;
 import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerSpawnPlayer;
 import com.lokkeestudios.skylands.Skylands;
 import com.lokkeestudios.skylands.npcsystem.Npc;
-import com.lokkeestudios.skylands.npcsystem.NpcRegistry;
+import com.lokkeestudios.skylands.npcsystem.NpcManager;
+import io.github.retrooper.packetevents.utils.SpigotReflectionUtil;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
@@ -28,63 +34,72 @@ public class NpcSpawnPacketListener implements PacketListener {
     final @NonNull Skylands skylands;
 
     /**
-     * The main {@link NpcRegistry} instance,
+     * The main {@link NpcManager} instance,
      * which is used for event functionality.
      */
-    private final @NonNull NpcRegistry npcRegistry;
+    private final @NonNull NpcManager npcManager;
 
     /**
      * Constructs the {@link NpcSpawnPacketListener}.
      *
-     * @param skylands    the main plugin instance of {@link Skylands}
-     * @param npcRegistry the main {@link NpcRegistry} instance
+     * @param skylands   the main plugin instance of {@link Skylands}
+     * @param npcManager the main {@link NpcManager} instance
      */
     public NpcSpawnPacketListener(
             final @NonNull Skylands skylands,
-            final @NonNull NpcRegistry npcRegistry
+            final @NonNull NpcManager npcManager
     ) {
         this.skylands = skylands;
-        this.npcRegistry = npcRegistry;
+        this.npcManager = npcManager;
     }
 
 
     @Override
     public void onPacketSend(PacketSendEvent event) {
+        final @NonNull ChannelAbstract channel = event.getChannel();
+
         if (event.getPacketType() == PacketType.Play.Server.SPAWN_LIVING_ENTITY) {
             final @NonNull WrapperPlayServerSpawnLivingEntity spawnLivingEntityPacket = new WrapperPlayServerSpawnLivingEntity(event);
+            final LivingEntity entity = (LivingEntity) SpigotReflectionUtil.getEntityById(spawnLivingEntityPacket.getEntityId());
 
-            if (!spawnLivingEntityPacket.getEntityType().equals(EntityTypes.ARMOR_STAND)) return;
-            if (!npcRegistry.isEntityNpc(spawnLivingEntityPacket.getEntityId())) return;
+            if (entity == null) return;
+            if (!entity.getType().equals(EntityType.ARMOR_STAND)) return;
+            if (!npcManager.isEntityNpc(entity)) return;
 
             event.setCancelled(true);
 
-            sendNpcSpawnPackets(event.getChannel(), spawnLivingEntityPacket);
+            sendNpcSpawnPackets(channel, entity);
 
         } else if (event.getPacketType() == PacketType.Play.Server.SPAWN_PLAYER) {
             final @NonNull WrapperPlayServerSpawnPlayer spawnPlayerPacket = new WrapperPlayServerSpawnPlayer(event);
-            final int entityId = spawnPlayerPacket.getEntityId();
+            final LivingEntity entity = (LivingEntity) SpigotReflectionUtil.getEntityById(spawnPlayerPacket.getEntityId());
 
-            if (!npcRegistry.isEntityNpc(entityId)) return;
+            if (entity == null) return;
+            if (!npcManager.isEntityNpc(entity)) return;
 
-            sendNpcModificationPackets(event.getChannel(), entityId);
+            sendNpcModificationPackets(channel, entity);
         }
     }
 
     /**
      * Sends the Npc {@link WrapperPlayServerSpawnPlayer} packets to the client.
      *
-     * @param channel                 the {@link ChannelAbstract} event channel
-     * @param spawnLivingEntityPacket the {@link WrapperPlayServerSpawnLivingEntity} packet for accessing the entity
+     * @param channel the {@link ChannelAbstract} event channel
+     * @param entity  the {@link LivingEntity} of the spawned Npc
      */
-    private void sendNpcSpawnPackets(final @NonNull ChannelAbstract channel, final @NonNull WrapperPlayServerSpawnLivingEntity spawnLivingEntityPacket) {
-        final int entityId = spawnLivingEntityPacket.getEntityId();
-        final @NonNull Npc npc = npcRegistry.getNpcFromEntityId(entityId);
+    private void sendNpcSpawnPackets(final @NonNull ChannelAbstract channel, final @NonNull LivingEntity entity) {
+        final @NonNull Npc npc = npcManager.getNpcFromEntity(entity);
 
-        final @NonNull WrapperPlayServerPlayerInfo playerInfoAddPacket = new WrapperPlayServerPlayerInfo(WrapperPlayServerPlayerInfo.Action.ADD_PLAYER, npc.getPlayerData());
+        final @NonNull WrapperPlayServerPlayerInfo playerInfoAddPacket = new WrapperPlayServerPlayerInfo(
+                WrapperPlayServerPlayerInfo.Action.ADD_PLAYER, npc.generatePlayerData()
+        );
 
-        final @NonNull Location location = new Location(spawnLivingEntityPacket.getPosition(), spawnLivingEntityPacket.getYaw(), spawnLivingEntityPacket.getPitch());
+        final @NonNull Location location = new Location(
+                entity.getLocation().getX(), entity.getLocation().getY(), entity.getLocation().getZ(),
+                entity.getLocation().getYaw(), entity.getLocation().getPitch()
+        );
 
-        final @NonNull WrapperPlayServerSpawnPlayer spawnPlayerPacket = new WrapperPlayServerSpawnPlayer(entityId, spawnLivingEntityPacket.getEntityUUID(), location);
+        final @NonNull WrapperPlayServerSpawnPlayer spawnPlayerPacket = new WrapperPlayServerSpawnPlayer(entity.getEntityId(), entity.getUniqueId(), location);
 
         final @NonNull PlayerManager playerManager = PacketEvents.getAPI().getPlayerManager();
 
@@ -95,25 +110,30 @@ public class NpcSpawnPacketListener implements PacketListener {
     /**
      * Sends the Npc modification packets to the client.
      *
-     * @param channel  the {@link ChannelAbstract} event channel
-     * @param entityId the entity id of the spawned entity player
+     * @param channel the {@link ChannelAbstract} event channel
+     * @param entity  the {@link LivingEntity} of the spawned Npc
      */
     private void sendNpcModificationPackets(
             final @NonNull ChannelAbstract channel,
-            final int entityId
+            final @NonNull LivingEntity entity
     ) {
-        final @NonNull Npc npc = npcRegistry.getNpcFromEntityId(entityId);
-        final @NonNull LivingEntity entity = npc.getEntity();
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                final @NonNull Npc npc = npcManager.getNpcFromEntity(entity);
 
-        final @NonNull WrapperPlayServerPlayerInfo playerInfoAddPacket = new WrapperPlayServerPlayerInfo(WrapperPlayServerPlayerInfo.Action.ADD_PLAYER, npc.getPlayerData());
+                final @NonNull WrapperPlayServerPlayerInfo playerInfoRemovePacket = new WrapperPlayServerPlayerInfo(WrapperPlayServerPlayerInfo.Action.REMOVE_PLAYER, npc.generatePlayerData());
 
-        final @NonNull Location location = new Location(entity.getLocation().getX(), entity.getLocation().getY(), entity.getLocation().getZ(), entity.getLocation().getYaw(), entity.getLocation().getPitch());
+                final @NonNull EntityDataProvider dataProvider = PlayerDataProvider.builderPlayer().skinParts(SkinSection.getAllSections()).build();
+                final @NonNull WrapperPlayServerEntityMetadata entityMetadataPacket = new WrapperPlayServerEntityMetadata(entity.getEntityId(), dataProvider.encode());
 
-        final @NonNull WrapperPlayServerSpawnPlayer spawnPlayerPacket = new WrapperPlayServerSpawnPlayer(entity.getEntityId(), entity.getUniqueId(), location);
+                final @NonNull PlayerManager playerManager = PacketEvents.getAPI().getPlayerManager();
 
-        final @NonNull PlayerManager playerManager = PacketEvents.getAPI().getPlayerManager();
+                playerManager.sendPacket(channel, playerInfoRemovePacket);
+                playerManager.sendPacket(channel, entityMetadataPacket);
 
-        playerManager.sendPacket(channel, playerInfoAddPacket);
-        playerManager.sendPacket(channel, spawnPlayerPacket);
+                npcManager.registerNpcToTeam(npc);
+            }
+        }.runTaskLater(this.skylands, 20L);
     }
 }

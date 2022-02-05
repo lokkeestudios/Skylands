@@ -19,7 +19,7 @@ import java.util.Objects;
  * @author LOKKEE
  * @version 1.0
  */
-public final class ItemBuilder extends BaseItemBuilder<ItemBuilder, ItemMeta> {
+public final class ItemBuilder extends BaseItemBuilder<@NonNull ItemBuilder, @NonNull ItemMeta> {
 
     /**
      * Constructs an {@link ItemBuilder}.
@@ -56,10 +56,11 @@ public final class ItemBuilder extends BaseItemBuilder<ItemBuilder, ItemMeta> {
      *
      * @param material the {@link Material} to base the builder off of
      * @return the instance of the ItemBuilder
+     * @throws IllegalArgumentException if the Material is not an item
      */
     public static @NonNull ItemBuilder of(
             final @NonNull Material material
-    ) throws IllegalArgumentException {
+    ) throws @NonNull IllegalArgumentException {
         return ItemBuilder.of(getItem(material));
     }
 }

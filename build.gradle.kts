@@ -6,6 +6,7 @@ plugins {
     id("io.papermc.paperweight.userdev") version "1.3.3"
     id("net.minecrell.plugin-yml.bukkit") version "0.5.1"
     id("com.github.johnrengelman.shadow") version "7.1.2"
+    kotlin("jvm") version "1.6.10"
 }
 
 group = "com.lokkeestudios"
@@ -33,6 +34,7 @@ dependencies {
     implementation("cloud.commandframework:cloud-minecraft-extras:1.6.1")
     implementation("com.github.stefvanschie.inventoryframework:IF:0.10.4")
     implementation("com.github.retrooper.packetevents:spigot:2.0-SNAPSHOT")
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 publishing {

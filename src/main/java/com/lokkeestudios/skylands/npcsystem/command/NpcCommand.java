@@ -8,6 +8,7 @@ import cloud.commandframework.arguments.standard.StringArgument;
 import cloud.commandframework.bukkit.parsers.PlayerArgument;
 import cloud.commandframework.context.CommandContext;
 import com.lokkeestudios.skylands.core.utils.Constants;
+import com.lokkeestudios.skylands.core.utils.TextUtil;
 import com.lokkeestudios.skylands.npcsystem.Npc;
 import com.lokkeestudios.skylands.npcsystem.NpcManager;
 import com.lokkeestudios.skylands.npcsystem.NpcRegistry;
@@ -176,7 +177,7 @@ public final class NpcCommand {
         if (context.contains("player")) {
             target = context.get("player");
 
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("Opened the npcs menu for ", Constants.Text.STYLE_DEFAULT)
                     .append(Component.text(target.getName(), Constants.Text.STYLE_HIGHLIGHTED))
             ));
@@ -198,26 +199,26 @@ public final class NpcCommand {
         final @NonNull Location location = player.getLocation();
 
         if (MiniMessage.get().stripTokens(name).length() > 16) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("The name of a npc may not be longer than 16 characters.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         if (npcRegistry.getIds().contains(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is already an existing npc with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         if (id.length() > 30) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("The id of a npc may not be longer than 30 characters.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         npcManager.createNpc(id, type, name, location);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Successfully created the npc ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
         ));
@@ -235,14 +236,14 @@ public final class NpcCommand {
         final @NonNull Location location = player.getLocation();
 
         if (!npcRegistry.isIdValid(id)) {
-            player.sendMessage(Constants.Text.PREFIX.append(Component
+            player.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing npc with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         npcManager.setLocation(id, location);
 
-        player.sendMessage(Constants.Text.PREFIX.append(Component
+        player.sendMessage(TextUtil.applyPrefix(Component
                 .text("Set the location of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
         ));
@@ -261,14 +262,14 @@ public final class NpcCommand {
         final @NonNull String textureSignature = context.get("texture_signature");
 
         if (!npcRegistry.isIdValid(id)) {
-            sender.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing npc with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         npcManager.setSkin(id, textureValue, textureSignature);
 
-        sender.sendMessage(Constants.Text.PREFIX.append(Component
+        sender.sendMessage(TextUtil.applyPrefix(Component
                 .text("Set the skin of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
         ));
@@ -286,20 +287,20 @@ public final class NpcCommand {
         final @NonNull String name = context.get("name");
 
         if (MiniMessage.get().stripTokens(name).length() > 16) {
-            sender.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(TextUtil.applyPrefix(Component
                     .text("The name of a npc may not be longer than 16 characters.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         if (!npcRegistry.isIdValid(id)) {
-            sender.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing npc with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         npcManager.setName(id, name);
 
-        sender.sendMessage(Constants.Text.PREFIX.append(Component
+        sender.sendMessage(TextUtil.applyPrefix(Component
                 .text("Set the name of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
                 .append(Component.text(" to ", Constants.Text.STYLE_DEFAULT))
@@ -319,20 +320,20 @@ public final class NpcCommand {
         final @NonNull String title = context.get("title");
 
         if (MiniMessage.get().stripTokens(title).length() > 16) {
-            sender.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(TextUtil.applyPrefix(Component
                     .text("The title of a npc may not be longer than 16 characters.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         if (!npcRegistry.isIdValid(id)) {
-            sender.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing npc with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         npcManager.setTitle(id, title);
 
-        sender.sendMessage(Constants.Text.PREFIX.append(Component
+        sender.sendMessage(TextUtil.applyPrefix(Component
                 .text("Set the title of ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_HIGHLIGHTED))
                 .append(Component.text(" to ", Constants.Text.STYLE_DEFAULT))
@@ -351,14 +352,14 @@ public final class NpcCommand {
         final @NonNull String id = context.get("id");
 
         if (!npcRegistry.isIdValid(id)) {
-            sender.sendMessage(Constants.Text.PREFIX.append(Component
+            sender.sendMessage(TextUtil.applyPrefix(Component
                     .text("There is no existing npc with such an id.", Constants.Text.STYLE_ALERT)
             ));
             return;
         }
         npcManager.deleteNpc(id);
 
-        sender.sendMessage(Constants.Text.PREFIX.append(Component
+        sender.sendMessage(TextUtil.applyPrefix(Component
                 .text("Successfully deleted the npc ", Constants.Text.STYLE_DEFAULT)
                 .append(Component.text(id, Constants.Text.STYLE_ALERT))
         ));

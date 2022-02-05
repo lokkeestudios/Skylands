@@ -9,12 +9,12 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 /**
  * A {@link ServerLoadEvent} listener, for everything which has to be run onLoad().
  */
-public class ServerLoadListener implements Listener {
+public final class ServerLoadListener implements Listener {
 
     /**
      * The main {@link NpcManager}.
      */
-    private final NpcManager npcManager;
+    private final @NonNull NpcManager npcManager;
 
     /**
      * Constructs a {@link ServerLoadListener}.
@@ -27,6 +27,6 @@ public class ServerLoadListener implements Listener {
 
     @EventHandler
     public void onServerLoad(final @NonNull ServerLoadEvent event) {
-        npcManager.loadNpcs();
+        this.npcManager.loadNpcs();
     }
 }

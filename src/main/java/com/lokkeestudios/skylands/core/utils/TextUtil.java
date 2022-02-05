@@ -15,7 +15,7 @@ import java.util.PrimitiveIterator;
  * The util for everything {@link Component} related.
  *
  * @author LOKKEE
- * @version 0.1
+ * @version 1.0
  */
 public final class TextUtil {
 
@@ -25,8 +25,19 @@ public final class TextUtil {
      * @param component the Component to be modified
      * @return a Component with reset styling
      */
-    public static Component resetDefaults(final ComponentLike component) {
+    public static @NonNull Component resetDefaults(final @NonNull ComponentLike component) {
         return Constants.Text.RESET_DEFAULTS.append(component);
+    }
+
+    /**
+     * Applies the prefix {@link Component},
+     * by appending it to the front.
+     *
+     * @param component the Component to be modified
+     * @return a Component with applied prefix
+     */
+    public static @NonNull Component applyPrefix(final @NonNull ComponentLike component) {
+        return Constants.Text.PREFIX.append(component);
     }
 
     /**

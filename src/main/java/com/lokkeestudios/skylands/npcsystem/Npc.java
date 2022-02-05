@@ -12,11 +12,14 @@ import com.github.retrooper.packetevents.wrapper.play.server.WrapperPlayServerPl
 import com.lokkeestudios.skylands.core.utils.Constants;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.MiniMessage;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.ArmorStand;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.persistence.PersistentDataType;
+import org.bukkit.util.Consumer;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
@@ -66,11 +69,6 @@ public class Npc {
     protected @NonNull Location location;
 
     /**
-     * The {@link WrapperPlayServerPlayerInfo.PlayerData} of the Npc.
-     */
-    protected WrapperPlayServerPlayerInfo.PlayerData playerData;
-
-    /**
      * The {@link LivingEntity} representing the Npc
      */
     protected LivingEntity entity;
@@ -99,14 +97,10 @@ public class Npc {
             final @NonNull String name,
             final @NonNull Location location
     ) {
-        this.id = id;
-        this.type = type;
-        this.name = name;
-        this.location = location;
-
-        this.textureValue = Constants.Textures.NpcDefault.TEXTURE_VALUE;
-        this.textureSignature = Constants.Textures.NpcDefault.TEXTURE_SIGNATURE;
-        this.title = Constants.Text.NPC_TITLE_DEFAULT;
+        this(
+                id, type, Constants.Textures.NpcDefault.TEXTURE_VALUE,
+                Constants.Textures.NpcDefault.TEXTURE_SIGNATURE, name, Constants.Text.NPC_TITLE_DEFAULT, location
+        );
     }
 
     /**
@@ -142,11 +136,14 @@ public class Npc {
      * Spawns the {@link ArmorStand} entity representing the Npc player.
      */
     public void spawn() {
-        this.entity = (LivingEntity) location.getWorld().spawnEntity(location, EntityType.ARMOR_STAND);
+        Consumer<ArmorStand> function = entity -> {
+            entity.getPersistentDataContainer().set(Constants.NamespacedKeys.KEY_ID, PersistentDataType.STRING, id);
+            entity.setGravity(false);
+            entity.setCanPickupItems(false);
+            entity.setCustomNameVisible(false);
+        };
 
-        this.entity.setGravity(false);
-        this.entity.setCanPickupItems(false);
-        this.entity.setCustomNameVisible(false);
+        this.entity = location.getWorld().spawn(location, ArmorStand.class, false, function);
 
         final @NonNull Location displayTitleLocation = new Location(location.getWorld(), location.getX(), (location.getY() - 0.2), location.getZ());
 
@@ -169,19 +166,19 @@ public class Npc {
         this.entityDisplayName.setVisible(false);
         this.entityDisplayName.setCustomNameVisible(true);
         this.entityDisplayName.customName(MiniMessage.get().parse(name));
-
-        setupPlayerData();
     }
 
     /**
-     * Sets up the {@link WrapperPlayServerPlayerInfo.PlayerData} of the Npc.
+     * Generates and then returns the {@link WrapperPlayServerPlayerInfo.PlayerData} of the Npc.
+     *
+     * @return the PlayerData of the Npc
      */
-    protected void setupPlayerData() {
+    public WrapperPlayServerPlayerInfo.PlayerData generatePlayerData() {
         final @NonNull UserProfile userProfile = new UserProfile(entity.getUniqueId(), Integer.toString(entity.getEntityId()));
         final @NonNull TextureProperty texture = new TextureProperty("textures", textureValue, textureSignature);
         userProfile.getTextureProperties().add(texture);
 
-        this.playerData = new WrapperPlayServerPlayerInfo.PlayerData(null, userProfile, GameMode.SURVIVAL, 1);
+        return new WrapperPlayServerPlayerInfo.PlayerData(null, userProfile, GameMode.SURVIVAL, 1);
     }
 
     /**
@@ -330,6 +327,7 @@ public class Npc {
         entity.teleportAsync(location);
         entityDisplayTitle.teleportAsync(displayTitleLocation);
         entityDisplayName.teleportAsync(displayNameLocation);
+        Bukkit.getLogger().warning("TELELPORTING NPC ASYNC!");
 
         this.location = location;
     }
@@ -341,14 +339,5 @@ public class Npc {
      */
     public LivingEntity getEntity() {
         return entity;
-    }
-
-    /**
-     * Gets the {@link WrapperPlayServerPlayerInfo.PlayerData} of the Npc.
-     *
-     * @return the Npcs player data
-     */
-    public WrapperPlayServerPlayerInfo.PlayerData getPlayerData() {
-        return playerData;
     }
 }

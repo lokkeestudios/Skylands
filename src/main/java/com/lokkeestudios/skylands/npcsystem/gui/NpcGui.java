@@ -85,13 +85,7 @@ public final class NpcGui {
     public NpcGui(
             final @NonNull NpcRegistry npcRegistry
     ) {
-        searchFilter = null;
-        sortFilter = null;
-        typeFilter = null;
-
-        this.npcRegistry = npcRegistry;
-
-        constructGui();
+        this(null, null, null, npcRegistry);
     }
 
     /**

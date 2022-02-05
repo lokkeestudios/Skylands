@@ -54,6 +54,7 @@ public class NpcLookCloseListener implements Listener {
             if (npcLocation.distance(playerLocation) > Constants.Variables.NPC_DISTANCE_LOOK_CLOSE) continue;
 
             new BukkitRunnable() {
+                @Override
                 public void run() {
                     npc.facePlayer(player);
                 }

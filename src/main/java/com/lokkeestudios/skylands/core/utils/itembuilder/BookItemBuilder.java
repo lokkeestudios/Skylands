@@ -16,7 +16,7 @@ import java.util.List;
  * @author LOKKEE
  * @version 1.0
  */
-public final class BookItemBuilder extends BaseItemBuilder<BookItemBuilder, BookMeta> {
+public final class BookItemBuilder extends BaseItemBuilder<@NonNull BookItemBuilder, @NonNull BookMeta> {
 
     /**
      * Constructs a {@link BookItemBuilder}.
@@ -36,8 +36,9 @@ public final class BookItemBuilder extends BaseItemBuilder<BookItemBuilder, Book
      *
      * @param itemStack the {@link ItemStack} to base the builder off of
      * @return the instance of the BookItemBuilder
+     * @throws IllegalArgumentException if the item is not of the correct item meta
      */
-    public static @NonNull BookItemBuilder of(final @NonNull ItemStack itemStack) throws IllegalArgumentException {
+    public static @NonNull BookItemBuilder of(final @NonNull ItemStack itemStack) throws @NonNull IllegalArgumentException {
         return new BookItemBuilder(itemStack, castMeta(itemStack.getItemMeta(), BookMeta.class));
     }
 
@@ -48,8 +49,9 @@ public final class BookItemBuilder extends BaseItemBuilder<BookItemBuilder, Book
      *
      * @param material the {@link Material} to base the builder off of
      * @return the instance of the BookItemBuilder
+     * @throws IllegalArgumentException if the item is not of the correct item meta
      */
-    public static @NonNull BookItemBuilder of(final @NonNull Material material) throws IllegalArgumentException {
+    public static @NonNull BookItemBuilder of(final @NonNull Material material) throws @NonNull IllegalArgumentException {
         return BookItemBuilder.of(getItem(material));
     }
 
@@ -60,7 +62,7 @@ public final class BookItemBuilder extends BaseItemBuilder<BookItemBuilder, Book
      * @return the {@link BookItemBuilder}
      */
     @SuppressWarnings("ResultOfMethodCallIgnored")
-    public @NonNull BookItemBuilder pages(final @NonNull List<Component> pages) {
+    public @NonNull BookItemBuilder pages(final @NonNull List<@NonNull Component> pages) {
         this.itemMeta.pages(pages);
         return this;
     }

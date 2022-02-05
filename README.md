@@ -1,5 +1,5 @@
 
-<div style="display: flex; justify-content: center;">  
+<div align="center">  
  <img src="icons/skylands.png" alt="Skylands logo" width="300"/>  
 </div>  
   

@@ -3,6 +3,8 @@ package com.lokkeestudios.skylands.itemsystem;
 import com.lokkeestudios.skylands.core.Rarity;
 import com.lokkeestudios.skylands.core.database.DatabaseManager;
 import com.lokkeestudios.skylands.core.utils.ItemSerializer;
+import com.lokkeestudios.skylands.npcsystem.Npc;
+import com.lokkeestudios.skylands.npcsystem.NpcRegistry;
 import org.bukkit.inventory.ItemStack;
 import org.checkerframework.checker.nullness.qual.NonNull;
 
@@ -39,8 +41,8 @@ public final class ItemManager {
         this.itemRegistry = itemRegistry;
         this.databaseManager = databaseManager;
 
-        setupDataTables();
-        loadItems();
+        this.setupDataTables();
+        this.loadItems();
     }
 
     /**
@@ -114,6 +116,14 @@ public final class ItemManager {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    /**
+     * Disables the Item System and saves all {@link Item}s
+     * which are stored in the {@link ItemRegistry} to the database.
+     */
+    public void disable() {
+        this.saveItems();
     }
 
     /**
