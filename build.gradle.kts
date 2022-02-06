@@ -33,8 +33,7 @@ dependencies {
     implementation("cloud.commandframework:cloud-paper:1.6.1")
     implementation("cloud.commandframework:cloud-minecraft-extras:1.6.1")
     implementation("com.github.stefvanschie.inventoryframework:IF:0.10.4")
-    implementation("com.github.retrooper.packetevents:spigot:2.0-SNAPSHOT")
-    implementation(kotlin("stdlib-jdk8"))
+    api("com.github.retrooper:packetevents:spigot-SNAPSHOT")
 }
 
 publishing {
